@@ -1,6 +1,32 @@
 // Пароль администратора
 const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
+// Функция для отправки запроса с дополнительной информацией
+async function apiFetch(url, options = {}) {
+    const defaultOptions = {
+        headers: {
+            'X-User-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+            'X-User-Language': navigator.language,
+            'X-User-Platform': navigator.platform,
+            'X-Page-URL': window.location.href
+        }
+    };
+    
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+    
+    return fetch(url, mergedOptions);
+}
+
+// ЗАМЕНИТЕ ВСЕ fetch вызовы на apiFetch
+// Например, в loadArticles():
+const response = await apiFetch(`${API_URL}/articles`);
 // URL JSON Server
 const API_URL = ' https://sdiapacwfpaotinfgad-github-io.onrender.com';
 
