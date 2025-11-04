@@ -1,0 +1,15 @@
+{
+  "name": "blog-json-server",
+  "version": "1.0.0",
+  "description": "JSON Server for blog API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "json-server": "^0.17.4"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
