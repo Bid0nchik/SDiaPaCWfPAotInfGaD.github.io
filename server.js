@@ -7,13 +7,18 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware для отслеживания посещений
 server.use((req, res, next) => {
-    // Получаем данные посетителя
-    const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    // Получаем реальный IP через разные методы
+    const ip = req.headers['x-forwarded-for'] || 
+               req.headers['x-real-ip'] || 
+               req.connection.remoteAddress || 
+               req.socket.remoteAddress ||
+               'unknown';
+    
     const userAgent = req.get('User-Agent') || 'Unknown';
     const timestamp = new Date().toISOString();
     
-    // Очищаем IP от префиксов
-    const cleanIp = ip.replace('::ffff:', '').replace('::1', 'localhost');
+    // Очищаем IP
+    const cleanIp = String(ip).split(',')[0].trim().replace('::ffff:', '').replace('::1', 'localhost');
     
     const visitorData = {
         ip: cleanIp,
@@ -22,32 +27,45 @@ server.use((req, res, next) => {
         method: req.method,
         timestamp: timestamp,
         time: new Date(timestamp).toLocaleString('ru-RU'),
-        referer: req.get('Referer') || 'direct'
+        referer: req.get('Referer') || 'direct',
+        host: req.get('Host') || 'unknown',
+        origin: req.get('Origin') || 'unknown'
     };
     
-    // Красивое логирование в консоль
-    console.log('🎯 НОВЫЙ ЗАПРОС');
+    // Логируем ВСЕ заголовки для отладки
+    console.log('🔍 ВСЕ ЗАГОЛОВКИ ЗАПРОСА:');
+    Object.keys(req.headers).forEach(key => {
+        console.log(`   ${key}: ${req.headers[key]}`);
+    });
+    
+    // Красивое логирование
+    console.log('🎯 НОВЫЙ ЗАПРОС ======================');
     console.log('├─ 📍 IP:', visitorData.ip);
     console.log('├─ 🌐 URL:', visitorData.url);
     console.log('├─ ⏰ Время:', visitorData.time);
-    console.log('├─ 📱 Браузер:', getBrowserInfo(visitorData.userAgent));
+    console.log('├─ 📱 User-Agent:', visitorData.userAgent);
     console.log('├─ 🔗 Метод:', visitorData.method);
-    console.log('└─ 📍 Источник:', visitorData.referer);
-    console.log('─────────────────────────────────────');
+    console.log('├─ 📍 Referer:', visitorData.referer);
+    console.log('├─ 🏠 Host:', visitorData.host);
+    console.log('└─ 🎯 Origin:', visitorData.origin);
+    console.log('=======================================');
     
     next();
 });
 
 // Функция для определения браузера и ОС
 function getBrowserInfo(userAgent) {
+    if (!userAgent || userAgent === 'Unknown') return 'Unknown';
+    
     let browser = 'Unknown';
     let os = 'Unknown';
     
     // Определяем браузер
-    if (userAgent.includes('Chrome')) browser = 'Chrome';
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browser = 'Chrome';
     else if (userAgent.includes('Firefox')) browser = 'Firefox';
-    else if (userAgent.includes('Safari')) browser = 'Safari';
-    else if (userAgent.includes('Edge')) browser = 'Edge';
+    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browser = 'Safari';
+    else if (userAgent.includes('Edg')) browser = 'Edge';
+    else if (userAgent.includes('OPR')) browser = 'Opera';
     
     // Определяем ОС
     if (userAgent.includes('Windows')) os = 'Windows';
@@ -59,12 +77,41 @@ function getBrowserInfo(userAgent) {
     return `${browser} on ${os}`;
 }
 
-// Специальный endpoint для проверки работы
+// Специальный endpoint для отладки
+server.get('/debug', (req, res) => {
+    const clientIP = req.headers['x-forwarded-for'] || 
+                    req.headers['x-real-ip'] || 
+                    req.connection.remoteAddress || 
+                    req.socket.remoteAddress ||
+                    'unknown';
+    
+    const cleanIp = String(clientIP).split(',')[0].trim().replace('::ffff:', '').replace('::1', 'localhost');
+    
+    res.json({
+        message: '🔧 Debug Information',
+        yourIP: cleanIp,
+        headers: req.headers,
+        connection: {
+            remoteAddress: req.connection.remoteAddress,
+            socketRemoteAddress: req.socket.remoteAddress
+        },
+        timestamp: new Date().toISOString(),
+        time: new Date().toLocaleString('ru-RU')
+    });
+});
+
+// Endpoint для проверки работы
 server.get('/ping', (req, res) => {
-    const clientIP = req.ip.replace('::ffff:', '').replace('::1', 'localhost');
+    const clientIP = req.headers['x-forwarded-for'] || 
+                    req.connection.remoteAddress || 
+                    'unknown';
+    
+    const cleanIp = String(clientIP).split(',')[0].trim().replace('::ffff:', '').replace('::1', 'localhost');
+    
     res.json({
         message: '✅ Server is working!',
-        yourIP: clientIP,
+        yourIP: cleanIp,
+        browser: getBrowserInfo(req.get('User-Agent')),
         timestamp: new Date().toISOString(),
         time: new Date().toLocaleString('ru-RU')
     });
@@ -78,10 +125,9 @@ server.listen(PORT, () => {
     console.log('🚀 ==================================');
     console.log('✅ JSON Server запущен!');
     console.log(`📍 Порт: ${PORT}`);
-    console.log('📊 Статистика посещений АКТИВИРОВАНА');
-    console.log('🔍 Тестовый endpoint: /ping');
+    console.log('📊 Улучшенное отслеживание включено');
+    console.log('🔧 Debug endpoint: /debug');
+    console.log('🔄 Ping endpoint: /ping');
     console.log('📚 Основной endpoint: /articles');
     console.log('🚀 ==================================');
-    console.log('ℹ️  Каждый посетитель будет отображаться здесь');
-    console.log('─────────────────────────────────────');
 });
