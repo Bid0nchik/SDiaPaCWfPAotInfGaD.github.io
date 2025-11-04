@@ -2,7 +2,7 @@
 const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
 // URL JSON Server
-const API_URL = 'http://localhost:3001';
+const API_URL = ' https://sdiapacwfpaotinfgad-github-io.onrender.com';
 
 // Глобальные переменные
 let articles = [];
