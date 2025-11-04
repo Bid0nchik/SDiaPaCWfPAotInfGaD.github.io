@@ -235,20 +235,37 @@ function logout() {
 }
 
 // Отображение статей
-function renderArticles() {
-    const container = document.getElementById('articlesContainer');
+container.innerHTML = sortedArticles.map(article => {
+    const views = article.views || 0;
     
-    if (!container) return;
-    
-    if (articles.length === 0) {
-        container.innerHTML = `
-            <div class="no-articles">
-                <h3>Статей пока нет</h3>
-                <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Войдите как администратор чтобы создать статью!'}</p>
+    return `
+    <div class="article-card" onclick="viewArticle('${article.id}')">
+        ${article.image ? `
+            <img src="${article.image}" alt="${article.title}" class="article-card-image">
+        ` : `
+            <div class="article-card-placeholder">Статья</div>
+        `}
+        <div class="article-card-content">
+            <h3 class="article-card-title">${article.title}</h3>
+            <p class="article-card-preview">${getPreview(article.content)}</p>
+            <div class="article-card-meta">
+                <p class="article-card-date">${formatDate(article.date)}</p>
+                <p class="article-card-views" id="views-${article.id}">👁️ ${views} просмотров</p>
             </div>
-        `;
-        return;
-    }
+            <div class="article-card-actions">
+                <button class="btn btn-secondary" onclick="event.stopPropagation(); viewArticle('${article.id}')">
+                    Читать
+                </button>
+                ${currentMode === 'admin' ? `
+                    <button class="btn btn-danger" onclick="event.stopPropagation(); deleteArticle('${article.id}')">
+                        Удалить
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+    `;
+}).join('');
 
     const sortedArticles = [...articles].sort((a, b) => new Date(b.date) - new Date(a.date));
     
@@ -411,31 +428,68 @@ function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-// Просмотр статьи
+// Просмотр статьи с автоматическим обновлением счетчика
 async function viewArticle(articleId) {
     const article = articles.find(a => a.id === articleId);
-    if (!article) return;
-
-    // Увеличиваем счетчик просмотров
-    const updatedViews = (article.views || 0) + 1;
-    
-    try {
-        await updateArticleViews(articleId, updatedViews);
-        article.views = updatedViews;
-    } catch (error) {
-        console.error('Ошибка обновления просмотров');
+    if (!article) {
+        alert('Статья не найдена!');
+        return;
     }
 
+    try {
+        // Увеличиваем счетчик просмотров на сервере
+        const currentViews = article.views || 0;
+        const newViews = currentViews + 1;
+        
+        // Обновляем статью на сервере
+        const response = await fetch(`${API_URL}/articles/${articleId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                views: newViews,
+                lastViewed: new Date().toISOString()
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка обновления просмотров');
+        }
+
+        // Обновляем локальную копию статьи
+        article.views = newViews;
+        article.lastViewed = new Date().toISOString();
+
+        // Сразу обновляем счетчик в списке статей
+        updateViewsCounter(articleId, newViews);
+
+        console.log(`📊 Просмотр статьи: "${article.title}"`);
+        console.log(`👁️ Новое количество просмотров: ${newViews}`);
+
+    } catch (error) {
+        console.error('Ошибка обновления просмотров:', error);
+        // Продолжаем показ статьи даже если счетчик не обновился
+    }
+
+    // Показываем статью
     document.getElementById('articlesList').classList.add('hidden');
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.remove('hidden');
 
     const container = document.getElementById('articleContentContainer');
+    const currentViews = article.views || 0;
+    
     container.innerHTML = `
         <div class="article-meta">
-            <p>📅 Опубликовано: ${formatDate(article.date)}</p>
-            <p>👁️ Просмотров: ${updatedViews}</p>
-            ${currentMode === 'guest' ? '<span class="read-only-badge">👤 Режим чтения</span>' : ''}
+            <div class="article-meta-left">
+                <p>📅 Опубликовано: ${formatDate(article.date)}</p>
+                ${article.lastViewed ? `<p>👀 Последний просмотр: ${formatDate(article.lastViewed)}</p>` : ''}
+            </div>
+            <div class="article-meta-right">
+                <p>👁️ Просмотров: <span id="current-views" class="views-counter">${currentViews}</span></p>
+                ${currentMode === 'guest' ? '<span class="read-only-badge">👤 Режим чтения</span>' : ''}
+            </div>
         </div>
         <h1>${article.title}</h1>
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
@@ -449,7 +503,28 @@ async function viewArticle(articleId) {
         ` : ''}
     `;
 }
-
+// Обновление счетчика просмотров в реальном времени
+function updateViewsCounter(articleId, newViews) {
+    // Обновляем в карточке статьи
+    const viewsElement = document.querySelector(`[onclick="viewArticle('${articleId}')"] .article-card-views`);
+    if (viewsElement) {
+        viewsElement.textContent = `👁️ ${newViews} просмотров`;
+    }
+    
+    // Обновляем в списке (если есть отдельный элемент)
+    const viewsCountElement = document.getElementById(`views-${articleId}`);
+    if (viewsCountElement) {
+        viewsCountElement.textContent = `👁️ ${newViews}`;
+    }
+    
+    // Обновляем в просмотре статьи
+    const currentViewsElement = document.getElementById('current-views');
+    if (currentViewsElement) {
+        currentViewsElement.textContent = newViews;
+    }
+    
+    console.log(`🔄 Счетчик обновлен: статья ${articleId} -> ${newViews} просмотров`);
+}
 function hideArticleView() {
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articlesList').classList.remove('hidden');
