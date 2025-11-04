@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статьер - Платформа для статей</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Аутентификация -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h2>Добро пожаловать в Статьер!</h2>
+            <p>Пожалуйста, выберите режим входа:</p>
+            <div class="auth-buttons">
+                <button onclick="enterAsAdmin()" class="btn btn-secondary btn">Войти как Администратор</button>
+                <button onclick="enterAsGuest()" class="btn btn-primary">Войти как Гость</button>
+            </div>
+            <div id="adminAuth" class="admin-auth hidden">
+                <input type="password" id="passwordInput" placeholder="Введите пароль администратора" class="password-input">
+                <button onclick="checkPassword()" class="btn btn-primary btn-green">✅ Подтвердить пароль</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Шапка -->
+    <header class="header">
+        <div class="container">
+            <h1>Статьер</h1>
+            <div class="header-actions">
+                <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
+                    🏠 Главная
+                </button>
+                <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
+                    ✏️ Новая статья
+                </button>
+                <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
+                    🔒 Выйти
+                </button>
+                <span id="userStatus" class="user-status hidden"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="main">
+        <div class="container">
+            <!-- Список статей -->
+            <div id="articlesList" class="articles-list">
+                <h2>Последние статьи</h2>
+                <div id="articlesContainer" class="articles-container">
+                    <!-- Статьи будут загружаться здесь -->
+                </div>
+            </div>
+
+            <!-- Редактор статьи (скрыт по умолчанию) -->
+            <div id="articleEditor" class="article-editor hidden">
+                <div class="editor-header">
+                    <h2>✏️ Новая статья</h2>
+                    <div class="editor-actions">
+                        <button onclick="saveArticle()" class="btn btn-primary">💾 Опубликовать</button>
+                        <button onclick="cancelEditing()" class="btn btn-secondary">❌ Отмена</button>
+                    </div>
+                </div>
+
+                <div class="editor-form">
+                    <!-- Блок 1: Заголовок -->
+                    <div class="form-block">
+                        <label for="articleTitle">📌 Заголовок статьи</label>
+                        <input type="text" id="articleTitle" placeholder="Введите заголовок..." class="form-input">
+                    </div>
+
+                    <!-- Блок 2: Содержание -->
+                    <div class="form-block">
+                        <label for="articleContent">📄 Содержание статьи</label>
+                        <textarea id="articleContent" placeholder="Напишите содержание вашей статьи..." class="form-textarea"></textarea>
+                    </div>
+
+                    <!-- Блок 3: Фото заголовок -->
+                    <div class="form-block">
+                        <label for="articleImage">🖼️ Фото заголовок</label>
+                        <input type="file" id="articleImage" accept="image/*" class="form-file">
+                        <div class="image-controls">
+                            <button id="removeImageBtn" class="btn btn-danger hidden" onclick="removeImage()">
+                                🗑️ Удалить картинку
+                            </button>
+                        </div>
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Просмотр статьи (скрыт по умолчанию) -->
+            <div id="articleView" class="article-view hidden">
+                <button onclick="hideArticleView()" class="btn btn-secondary back-btn">← Назад к статьям</button>
+                <article id="articleContentContainer" class="article-content">
+                    <!-- Содержание статьи будет здесь -->
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 Статьер. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
