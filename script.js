@@ -18,7 +18,78 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчик загрузки изображения
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
+// Сохранение статьи (ОБНОВЛЕННАЯ ФУНКЦИЯ)
+async function saveArticle() {
+    if (currentMode !== 'admin') {
+        alert('❌ Доступ запрещен! Требуются права администратора.');
+        return;
+    }
 
+    const title = document.getElementById('articleTitle').value.trim();
+    const content = document.getElementById('articleContent').value.trim();
+
+    if (!title) {
+        alert('Пожалуйста, введите заголовок статьи');
+        document.getElementById('articleTitle').focus();
+        return;
+    }
+    if (!content) {
+        alert('Пожалуйста, введите содержание статьи');
+        document.getElementById('articleContent').focus();
+        return;
+    }
+
+    const newArticle = {
+        id: generateId(),
+        title: title,
+        content: content,
+        image: currentImage,
+        date: new Date().toISOString()
+    };
+
+    try {
+        await saveArticleToServer(newArticle);
+        articles.push(newArticle);
+        renderArticles();
+        hideEditor();
+        goToHome();
+        alert('✅ Статья успешно опубликована!');
+    } catch (error) {
+        alert('❌ Ошибка при сохранении статьи');
+    }
+}
+
+// Удаление статьи (ОБНОВЛЕННАЯ ФУНКЦИЯ)
+async function deleteArticle(articleId) {
+    if (currentMode !== 'admin') {
+        alert('❌ Доступ запрещен! Требуются права администратора.');
+        return;
+    }
+
+    if (confirm('Вы уверены, что хотите удалить эту статью?')) {
+        try {
+            await deleteArticleFromServer(articleId);
+            articles = articles.filter(a => a.id !== articleId);
+            renderArticles();
+            hideArticleView();
+            alert('✅ Статья удалена!');
+        } catch (error) {
+            alert('❌ Ошибка при удалении статьи');
+        }
+    }
+}
+
+// Фолбэк функции для localStorage
+function loadArticlesFromLocalStorage() {
+    const savedArticles = localStorage.getItem('blog_articles');
+    articles = savedArticles ? JSON.parse(savedArticles) : [];
+    console.log('Загружено из localStorage:', articles.length);
+}
+
+function saveArticleToLocalStorage(article) {
+    articles.push(article);
+    localStorage.setItem('blog_articles', JSON.stringify(articles));
+}
 // Показать выбор режима
 function showModeSelection() {
     document.getElementById('authModal').classList.remove('hidden');
@@ -149,19 +220,6 @@ function logout() {
     
     // Показываем выбор режима заново
     showModeSelection();
-}
-
-// Загрузка статей из localStorage
-function loadArticles() {
-    const savedArticles = localStorage.getItem('blog_articles');
-    articles = savedArticles ? JSON.parse(savedArticles) : [];
-    console.log('Загружено статей:', articles.length);
-}
-
-// Сохранение статей в localStorage
-function saveArticles() {
-    localStorage.setItem('blog_articles', JSON.stringify(articles));
-    console.log('Сохранено статей:', articles.length);
 }
 
 // Отображение списка статей
@@ -387,4 +445,5 @@ function deleteArticle(articleId) {
         hideArticleView();
     }
 }
+
 
