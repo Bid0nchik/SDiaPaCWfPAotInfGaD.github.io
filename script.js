@@ -1,7 +1,7 @@
 // Пароль администратора
 const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
-// URL JSON Server
+// URL JSON Server - ЗАМЕНИТЕ на ваш URL с Render
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Глобальные переменные
@@ -11,102 +11,17 @@ let currentMode = null; // 'admin' или 'guest'
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
-    loadArticles();
-    // Принудительно показываем выбор режима при каждом входе
+    loadArticlesFromServer();
     showModeSelection();
     
     // Обработчик загрузки изображения
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
-// Сохранение статьи (ОБНОВЛЕННАЯ ФУНКЦИЯ)
-async function saveArticle() {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
 
-    const title = document.getElementById('articleTitle').value.trim();
-    const content = document.getElementById('articleContent').value.trim();
-
-    if (!title) {
-        alert('Пожалуйста, введите заголовок статьи');
-        document.getElementById('articleTitle').focus();
-        return;
-    }
-    if (!content) {
-        alert('Пожалуйста, введите содержание статьи');
-        document.getElementById('articleContent').focus();
-        return;
-    }
-
-    const newArticle = {
-        id: generateId(),
-        title: title,
-        content: content,
-        image: currentImage,
-        date: new Date().toISOString()
-    };
-
-    try {
-        await saveArticleToServer(newArticle);
-        articles.push(newArticle);
-        renderArticles();
-        hideEditor();
-        goToHome();
-        alert('✅ Статья успешно опубликована!');
-    } catch (error) {
-        alert('❌ Ошибка при сохранении статьи');
-    }
-}
-
-// Удаление статьи (ОБНОВЛЕННАЯ ФУНКЦИЯ)
-async function deleteArticle(articleId) {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
-    if (confirm('Вы уверены, что хотите удалить эту статью?')) {
-        try {
-            await deleteArticleFromServer(articleId);
-            articles = articles.filter(a => a.id !== articleId);
-            renderArticles();
-            hideArticleView();
-            alert('✅ Статья удалена!');
-        } catch (error) {
-            alert('❌ Ошибка при удалении статьи');
-        }
-    }
-}
-
-// Фолбэк функции для localStorage
-function loadArticlesFromLocalStorage() {
-    const savedArticles = localStorage.getItem('blog_articles');
-    articles = savedArticles ? JSON.parse(savedArticles) : [];
-    console.log('Загружено из localStorage:', articles.length);
-}
-
-function saveArticleToLocalStorage(article) {
-    articles.push(article);
-    localStorage.setItem('blog_articles', JSON.stringify(articles));
-}
 // Показать выбор режима
 function showModeSelection() {
     document.getElementById('authModal').classList.remove('hidden');
     document.getElementById('articlesList').classList.add('hidden');
-}
-
-// Вход как администратор (показать поле пароля)
-function enterAsAdmin() {
-    document.getElementById('adminAuth').classList.remove('hidden');
-    document.getElementById('passwordInput').focus();
-}
-
-// Вход как гость
-function enterAsGuest() {
-    currentMode = 'guest';
-    hideAuthModal();
-    showGuestFeatures();
 }
 
 // Проверка пароля администратора
@@ -116,7 +31,6 @@ function checkPassword() {
     const password = passwordInput.value.trim();
 
     if (password === ADMIN_PASSWORD) {
-        // Успешная аутентификация
         currentMode = 'admin';
         hideAuthModal();
         showAdminFeatures();
@@ -126,6 +40,13 @@ function checkPassword() {
         passwordInput.value = '';
         passwordInput.focus();
     }
+}
+
+// Вход как гость
+function enterAsGuest() {
+    currentMode = 'guest';
+    hideAuthModal();
+    showGuestFeatures();
 }
 
 // Скрыть модальное окно аутентификации
@@ -142,12 +63,8 @@ function showAdminFeatures() {
     document.getElementById('userStatus').textContent = 'Администратор';
     document.getElementById('userStatus').className = 'user-status admin';
     
-    // ПОКАЗЫВАЕМ статьи и рендерим их!
     document.getElementById('articlesList').classList.remove('hidden');
-    
-    // Показать уведомление о режиме админа
     showAdminNotice();
-    renderArticles();
 }
 
 // Показать функции гостя
@@ -159,24 +76,24 @@ function showGuestFeatures() {
     document.getElementById('userStatus').textContent = 'Гость';
     document.getElementById('userStatus').className = 'user-status guest';
     
-    // ПОКАЗЫВАЕМ статьи и рендерим их!
     document.getElementById('articlesList').classList.remove('hidden');
-    
-    // Показать уведомление о гостевом режиме
     showGuestNotice();
-    renderArticles();
 }
 
 // Показать уведомление для гостя
 function showGuestNotice() {
     const articlesContainer = document.getElementById('articlesContainer');
-    // Удаляем старое уведомление если есть
     const oldNotice = document.querySelector('.guest-notice');
     if (oldNotice) oldNotice.remove();
     
-    if (articlesContainer && articles.length > 0) {
+    if (articlesContainer) {
         const notice = document.createElement('div');
         notice.className = 'guest-notice';
+        notice.innerHTML = `
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                👋 Вы вошли как гость. Для создания статей войдите как администратор.
+            </div>
+        `;
         articlesContainer.parentNode.insertBefore(notice, articlesContainer);
     }
 }
@@ -184,16 +101,17 @@ function showGuestNotice() {
 // Показать уведомление для администратора
 function showAdminNotice() {
     const articlesContainer = document.getElementById('articlesContainer');
-    // Удаляем старое уведомление если есть
     const oldNotice = document.querySelector('.guest-notice');
     if (oldNotice) oldNotice.remove();
     
-    if (articlesContainer && articles.length > 0) {
+    if (articlesContainer) {
         const notice = document.createElement('div');
         notice.className = 'guest-notice';
-        notice.style.background = '#d4edda';
-        notice.style.borderColor = '#c3e6cb';
-        notice.style.color = '#155724';
+        notice.innerHTML = `
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                ⚡ Вы вошли как администратор. Теперь вы можете создавать и удалять статьи.
+            </div>
+        `;
         articlesContainer.parentNode.insertBefore(notice, articlesContainer);
     }
 }
@@ -203,12 +121,10 @@ function goToHome() {
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articlesList').classList.remove('hidden');
-    renderArticles();
 }
 
 // Выход из системы
 function logout() {
-    // Полностью сбрасываем состояние
     currentMode = null;
     document.getElementById('homeBtn').classList.add('hidden');
     document.getElementById('newArticleBtn').classList.add('hidden');
@@ -218,17 +134,94 @@ function logout() {
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
     
-    // Показываем выбор режима заново
     showModeSelection();
+}
+
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('🔄 Загружаем статьи с сервера...');
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('✅ Статьи загружены:', articles.length);
+        renderArticles();
+    } catch (error) {
+        console.error('❌ Ошибка загрузки статей с сервера:', error);
+        // Если сервер недоступен, пробуем загрузить из localStorage
+        loadArticlesFromLocalStorage();
+    }
+}
+
+// Фолбэк: загрузка из localStorage
+function loadArticlesFromLocalStorage() {
+    const savedArticles = localStorage.getItem('blog_articles');
+    articles = savedArticles ? JSON.parse(savedArticles) : [];
+    console.log('📁 Загружено из localStorage:', articles.length);
+    renderArticles();
+}
+
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    try {
+        const response = await fetch(`${API_URL}/articles`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(article)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const savedArticle = await response.json();
+        console.log('✅ Статья сохранена на сервере:', savedArticle.id);
+        return savedArticle;
+    } catch (error) {
+        console.error('❌ Ошибка сохранения на сервер:', error);
+        // Если сервер недоступен, сохраняем в localStorage
+        saveArticleToLocalStorage(article);
+        throw error;
+    }
+}
+
+// Фолбэк: сохранение в localStorage
+function saveArticleToLocalStorage(article) {
+    articles.push(article);
+    localStorage.setItem('blog_articles', JSON.stringify(articles));
+    console.log('📁 Статья сохранена в localStorage');
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    try {
+        const response = await fetch(`${API_URL}/articles/${articleId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log('✅ Статья удалена с сервера:', articleId);
+    } catch (error) {
+        console.error('❌ Ошибка удаления с сервера:', error);
+        throw error;
+    }
 }
 
 // Отображение списка статей
 function renderArticles() {
     const container = document.getElementById('articlesContainer');
-    console.log('Рендерим статьи. Режим:', currentMode, 'Количество:', articles.length);
     
     if (!container) {
-        console.error('Контейнер статей не найден!');
+        console.error('❌ Контейнер статей не найден!');
         return;
     }
     
@@ -264,8 +257,9 @@ function renderArticles() {
 // Получение превью текста
 function getPreview(text, maxLength = 150) {
     if (!text) return 'Нет содержания';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    const cleanText = text.replace(/<br>/g, ' ').replace(/<[^>]*>/g, '');
+    if (cleanText.length <= maxLength) return cleanText;
+    return cleanText.substring(0, maxLength) + '...';
 }
 
 // Форматирование даты
@@ -336,7 +330,6 @@ function showEditor() {
     document.getElementById('removeImageBtn').classList.add('hidden');
     currentImage = null;
     
-    // Фокус на заголовок
     document.getElementById('articleTitle').focus();
 }
 
@@ -354,7 +347,7 @@ function hideEditor() {
 }
 
 // Сохранение статьи
-function saveArticle() {
+async function saveArticle() {
     if (currentMode !== 'admin') {
         alert('❌ Доступ запрещен! Требуются права администратора.');
         return;
@@ -363,7 +356,6 @@ function saveArticle() {
     const title = document.getElementById('articleTitle').value.trim();
     const content = document.getElementById('articleContent').value.trim();
 
-    // Валидация
     if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
         document.getElementById('articleTitle').focus();
@@ -375,7 +367,6 @@ function saveArticle() {
         return;
     }
 
-    // Создаем новую статью
     const newArticle = {
         id: generateId(),
         title: title,
@@ -384,11 +375,17 @@ function saveArticle() {
         date: new Date().toISOString()
     };
 
-    articles.push(newArticle);
-    saveArticles();
-    renderArticles();
-    hideEditor();
-    goToHome();
+    try {
+        await saveArticleToServer(newArticle);
+        // Обновляем локальный массив статей
+        articles.push(newArticle);
+        renderArticles();
+        hideEditor();
+        goToHome();
+        alert('✅ Статья успешно опубликована!');
+    } catch (error) {
+        alert('❌ Ошибка при сохранении статьи. Данные сохранены локально.');
+    }
 }
 
 // Генерация ID
@@ -403,6 +400,7 @@ function viewArticle(articleId) {
         alert('Статья не найдена!');
         return;
     }
+    
     document.getElementById('articlesList').classList.add('hidden');
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.remove('hidden');
@@ -432,18 +430,29 @@ function hideArticleView() {
 }
 
 // Удаление статьи
-function deleteArticle(articleId) {
+async function deleteArticle(articleId) {
     if (currentMode !== 'admin') {
         alert('❌ Доступ запрещен! Требуются права администратора.');
         return;
     }
 
     if (confirm('Вы уверены, что хотите удалить эту статью?')) {
-        articles = articles.filter(a => a.id !== articleId);
-        saveArticles();
-        renderArticles();
-        hideArticleView();
+        try {
+            await deleteArticleFromServer(articleId);
+            // Обновляем локальный массив
+            articles = articles.filter(a => a.id !== articleId);
+            // Также удаляем из localStorage для синхронизации
+            localStorage.setItem('blog_articles', JSON.stringify(articles));
+            renderArticles();
+            hideArticleView();
+            alert('✅ Статья удалена!');
+        } catch (error) {
+            // Если сервер недоступен, удаляем только локально
+            articles = articles.filter(a => a.id !== articleId);
+            localStorage.setItem('blog_articles', JSON.stringify(articles));
+            renderArticles();
+            hideArticleView();
+            alert('✅ Статья удалена (локально)!');
+        }
     }
 }
-
-
