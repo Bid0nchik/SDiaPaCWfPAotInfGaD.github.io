@@ -280,11 +280,6 @@ function hideEditor() {
 
 // Сохранение статьи
 async function saveArticle() {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
     const title = document.getElementById('articleTitle').value.trim();
     const content = document.getElementById('articleContent').value.trim();
 
@@ -317,11 +312,9 @@ async function saveArticle() {
         hideEditor();
         goToHome();
         
-        alert('✅ Статья успешно опубликована! Все пользователи увидят её.');
-        
     } catch (error) {
         console.error('Ошибка:', error);
-        alert('❌ Не удалось сохранить статью. Проверьте подключение к серверу.');
+        alert('Не удалось сохранить статью. Проверьте подключение к серверу.');
     }
 }
 
@@ -345,7 +338,7 @@ function viewArticle(articleId) {
     const container = document.getElementById('articleContentContainer');
     container.innerHTML = `
         <div class="article-meta">
-            <p>📅 Опубликовано: ${formatDate(article.date)}</p>
+            <p>Опубликовано: ${formatDate(article.date)}</p>
         </div>
         <h1>${article.title}</h1>
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
@@ -353,7 +346,7 @@ function viewArticle(articleId) {
         ${currentMode === 'admin' ? `
             <div style="text-align: center; margin-top: 2rem;">
                 <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                    🗑️ Удалить статью
+                    Удалить статью
                 </button>
             </div>
         ` : ''}
@@ -368,11 +361,6 @@ function hideArticleView() {
 
 // Удаление статьи
 async function deleteArticle(articleId) {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
     if (confirm('Вы уверены, что хотите удалить эту статью?')) {
         try {
             await deleteArticleFromServer(articleId);
@@ -381,10 +369,9 @@ async function deleteArticle(articleId) {
             await loadArticlesFromServer();
             
             hideArticleView();
-            alert('✅ Статья удалена!');
             
         } catch (error) {
-            alert('❌ Не удалось удалить статью. Проверьте подключение к серверу.');
+            alert('Не удалось удалить статью. Проверьте подключение к серверу.');
         }
     }
 }
@@ -404,4 +391,3 @@ function showError(message) {
         `;
     }
 }
-
