@@ -106,10 +106,6 @@ function showGuestNotice() {
     if (articlesContainer && articles.length > 0) {
         const notice = document.createElement('div');
         notice.className = 'guest-notice';
-        notice.innerHTML = `
-            <strong>👋 Вы вошли как гость</strong>
-            <p>Вы можете читать статьи, но для создания и удаления нужны права администратора</p>
-        `;
         articlesContainer.parentNode.insertBefore(notice, articlesContainer);
     }
 }
@@ -127,10 +123,6 @@ function showAdminNotice() {
         notice.style.background = '#d4edda';
         notice.style.borderColor = '#c3e6cb';
         notice.style.color = '#155724';
-        notice.innerHTML = `
-            <strong>👑 Вы вошли как администратор</strong>
-            <p>У вас есть полный доступ к созданию и удалению статей</p>
-        `;
         articlesContainer.parentNode.insertBefore(notice, articlesContainer);
     }
 }
@@ -205,17 +197,7 @@ function renderArticles() {
             <div class="article-card-content">
                 <h3 class="article-card-title">${article.title}</h3>
                 <p class="article-card-preview">${getPreview(article.content)}</p>
-                <p class="article-card-date">📅 ${formatDate(article.date)}</p>
-                <div class="article-card-actions">
-                    <button class="btn btn-secondary" onclick="event.stopPropagation(); viewArticle('${article.id}')">
-                        👁️ Читать
-                    </button>
-                    ${currentMode === 'admin' ? `
-                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteArticle('${article.id}')">
-                            🗑️ Удалить
-                        </button>
-                    ` : ''}
-                </div>
+                <p class="article-card-date">${formatDate(article.date)}</p>
             </div>
         </div>
     `).join('');
@@ -349,8 +331,6 @@ function saveArticle() {
     renderArticles();
     hideEditor();
     goToHome();
-    
-    alert('✅ Статья успешно опубликована!');
 }
 
 // Генерация ID
@@ -373,7 +353,6 @@ function viewArticle(articleId) {
     container.innerHTML = `
         <div class="article-meta">
             <p>📅 Опубликовано: ${formatDate(article.date)}</p>
-            ${currentMode === 'guest' ? '<span class="read-only-badge">👤 Режим чтения</span>' : ''}
         </div>
         <h1>${article.title}</h1>
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
@@ -383,12 +362,6 @@ function viewArticle(articleId) {
                 <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
                     🗑️ Удалить статью
                 </button>
-            </div>
-        ` : currentMode === 'guest' ? `
-            <div class="article-actions-guest">
-                <p style="color: #7f8c8d; font-style: italic;">
-                    🔒 Для редактирования и удаления статей войдите как администратор
-                </p>
             </div>
         ` : ''}
     `;
@@ -412,6 +385,5 @@ function deleteArticle(articleId) {
         saveArticles();
         renderArticles();
         hideArticleView();
-        alert('✅ Статья успешно удалена!');
     }
 }
