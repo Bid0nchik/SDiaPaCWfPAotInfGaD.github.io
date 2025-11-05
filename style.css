@@ -88,22 +88,22 @@ body {
 }
 
 .btn-primary {
-    background: #3498db;
+    background: #4eb467;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #2980b9;
+    background: #059729;
     transform: translateY(-2px);
 }
 
 .btn-secondary {
-    background: #95a5a6;
+    background: #409b9b;
     color: white;
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+    background: #277b81;
 }
 
 .btn-danger {
