@@ -2,21 +2,70 @@
 const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
 // URL JSON Server - ЗАМЕНИТЕ на ваш URL с Render
-const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
+const API_URL = 'https://your-app-name.onrender.com';
 
 // Глобальные переменные
 let articles = [];
 let currentImage = null;
-let currentMode = null; // 'admin' или 'guest'
+let currentMode = null;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Инициализация приложения...');
     loadArticlesFromServer();
     showModeSelection();
     
-    // Обработчик загрузки изображения
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
+
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('📡 Загружаем статьи с сервера...');
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('✅ Статьи загружены:', articles.length);
+        renderArticles();
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки:', error);
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        renderArticles(); // Рендерим пустой список
+    }
+}
+
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    const response = await fetch(`${API_URL}/articles`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+}
 
 // Показать выбор режима
 function showModeSelection() {
@@ -64,7 +113,6 @@ function showAdminFeatures() {
     document.getElementById('userStatus').className = 'user-status admin';
     
     document.getElementById('articlesList').classList.remove('hidden');
-    showAdminNotice();
 }
 
 // Показать функции гостя
@@ -77,43 +125,6 @@ function showGuestFeatures() {
     document.getElementById('userStatus').className = 'user-status guest';
     
     document.getElementById('articlesList').classList.remove('hidden');
-    showGuestNotice();
-}
-
-// Показать уведомление для гостя
-function showGuestNotice() {
-    const articlesContainer = document.getElementById('articlesContainer');
-    const oldNotice = document.querySelector('.guest-notice');
-    if (oldNotice) oldNotice.remove();
-    
-    if (articlesContainer) {
-        const notice = document.createElement('div');
-        notice.className = 'guest-notice';
-        notice.innerHTML = `
-            <div style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
-                👋 Вы вошли как гость. Для создания статей войдите как администратор.
-            </div>
-        `;
-        articlesContainer.parentNode.insertBefore(notice, articlesContainer);
-    }
-}
-
-// Показать уведомление для администратора
-function showAdminNotice() {
-    const articlesContainer = document.getElementById('articlesContainer');
-    const oldNotice = document.querySelector('.guest-notice');
-    if (oldNotice) oldNotice.remove();
-    
-    if (articlesContainer) {
-        const notice = document.createElement('div');
-        notice.className = 'guest-notice';
-        notice.innerHTML = `
-            <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
-                ⚡ Вы вошли как администратор. Теперь вы можете создавать и удалять статьи.
-            </div>
-        `;
-        articlesContainer.parentNode.insertBefore(notice, articlesContainer);
-    }
 }
 
 // Переход на главную страницу
@@ -137,85 +148,6 @@ function logout() {
     showModeSelection();
 }
 
-// Загрузка статей с сервера
-async function loadArticlesFromServer() {
-    try {
-        console.log('🔄 Загружаем статьи с сервера...');
-        const response = await fetch(`${API_URL}/articles`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        articles = await response.json();
-        console.log('✅ Статьи загружены:', articles.length);
-        renderArticles();
-    } catch (error) {
-        console.error('❌ Ошибка загрузки статей с сервера:', error);
-        // Если сервер недоступен, пробуем загрузить из localStorage
-        loadArticlesFromLocalStorage();
-    }
-}
-
-// Фолбэк: загрузка из localStorage
-function loadArticlesFromLocalStorage() {
-    const savedArticles = localStorage.getItem('blog_articles');
-    articles = savedArticles ? JSON.parse(savedArticles) : [];
-    console.log('📁 Загружено из localStorage:', articles.length);
-    renderArticles();
-}
-
-// Сохранение статьи на сервер
-async function saveArticleToServer(article) {
-    try {
-        const response = await fetch(`${API_URL}/articles`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(article)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const savedArticle = await response.json();
-        console.log('✅ Статья сохранена на сервере:', savedArticle.id);
-        return savedArticle;
-    } catch (error) {
-        console.error('❌ Ошибка сохранения на сервер:', error);
-        // Если сервер недоступен, сохраняем в localStorage
-        saveArticleToLocalStorage(article);
-        throw error;
-    }
-}
-
-// Фолбэк: сохранение в localStorage
-function saveArticleToLocalStorage(article) {
-    articles.push(article);
-    localStorage.setItem('blog_articles', JSON.stringify(articles));
-    console.log('📁 Статья сохранена в localStorage');
-}
-
-// Удаление статьи с сервера
-async function deleteArticleFromServer(articleId) {
-    try {
-        const response = await fetch(`${API_URL}/articles/${articleId}`, {
-            method: 'DELETE'
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        console.log('✅ Статья удалена с сервера:', articleId);
-    } catch (error) {
-        console.error('❌ Ошибка удаления с сервера:', error);
-        throw error;
-    }
-}
-
 // Отображение списка статей
 function renderArticles() {
     const container = document.getElementById('articlesContainer');
@@ -229,7 +161,7 @@ function renderArticles() {
         container.innerHTML = `
             <div class="no-articles">
                 <h3>📝 Статей пока нет</h3>
-                <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Войдите как администратор чтобы создать статью!'}</p>
+                <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Статьи появятся скоро!'}</p>
             </div>
         `;
         return;
@@ -376,15 +308,20 @@ async function saveArticle() {
     };
 
     try {
+        // Сохраняем на сервер
         await saveArticleToServer(newArticle);
-        // Обновляем локальный массив статей
-        articles.push(newArticle);
-        renderArticles();
+        
+        // Обновляем список статей с сервера
+        await loadArticlesFromServer();
+        
         hideEditor();
         goToHome();
-        alert('✅ Статья успешно опубликована!');
+        
+        alert('✅ Статья успешно опубликована! Все пользователи увидят её.');
+        
     } catch (error) {
-        alert('❌ Ошибка при сохранении статьи. Данные сохранены локально.');
+        console.error('Ошибка:', error);
+        alert('❌ Не удалось сохранить статью. Проверьте подключение к серверу.');
     }
 }
 
@@ -439,20 +376,31 @@ async function deleteArticle(articleId) {
     if (confirm('Вы уверены, что хотите удалить эту статью?')) {
         try {
             await deleteArticleFromServer(articleId);
-            // Обновляем локальный массив
-            articles = articles.filter(a => a.id !== articleId);
-            // Также удаляем из localStorage для синхронизации
-            localStorage.setItem('blog_articles', JSON.stringify(articles));
-            renderArticles();
+            
+            // Обновляем список статей с сервера
+            await loadArticlesFromServer();
+            
             hideArticleView();
             alert('✅ Статья удалена!');
+            
         } catch (error) {
-            // Если сервер недоступен, удаляем только локально
-            articles = articles.filter(a => a.id !== articleId);
-            localStorage.setItem('blog_articles', JSON.stringify(articles));
-            renderArticles();
-            hideArticleView();
-            alert('✅ Статья удалена (локально)!');
+            alert('❌ Не удалось удалить статью. Проверьте подключение к серверу.');
         }
+    }
+}
+
+// Показать ошибку
+function showError(message) {
+    const container = document.getElementById('articlesContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="no-articles">
+                <h3>❌ Ошибка загрузки</h3>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="loadArticlesFromServer()">
+                    🔄 Повторить попытку
+                </button>
+            </div>
+        `;
     }
 }
