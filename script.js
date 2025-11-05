@@ -296,7 +296,7 @@ container.innerHTML = sortedArticles.map(article => {
             </div>
         </div>
     `).join('');
-}
+
 
 function getPreview(text, maxLength = 150) {
     if (!text) return 'Нет содержания';
