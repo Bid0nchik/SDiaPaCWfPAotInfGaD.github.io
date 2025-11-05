@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Статьер - Платформа для статей</title>
+    <title>Мой Блог - Платформа для статей</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Аутентификация -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <h2>Добро пожаловать в Статьер!</h2>
-            <p>Пожалуйста, выберите режим входа:</p>
+            <h2>Вход в систему</h2>
+            <p>Введите пароль администратора для полного доступа или войдите как гость для чтения</p>
+            <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
-                <button onclick="enterAsAdmin()" class="btn btn-secondary btn">Войти как Администратор</button>
-                <button onclick="enterAsGuest()" class="btn btn-primary">Войти как Гость</button>
+                <button onclick="checkPassword()" class="btn btn-primary">Войти как администратор</button>
+                <button onclick="enterAsGuest()" class="btn btn-secondary">Войти как гость</button>
             </div>
-            <div id="adminAuth" class="admin-auth hidden">
-                <input type="password" id="passwordInput" placeholder="Введите пароль администратора" class="password-input">
-                <button onclick="checkPassword()" class="btn btn-primary btn-green">✅ Подтвердить пароль</button>
-            </div>
+            <p id="errorMessage" class="error-message"></p>
+            <p class="hint">Подсказка: пароль администратора - 1234</p>
         </div>
     </div>
 
     <!-- Шапка -->
     <header class="header">
         <div class="container">
-            <h1>Статьер</h1>
+            <h1>📝 Мой Блог</h1>
             <div class="header-actions">
                 <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
                     🏠 Главная
                 </button>
-                <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
+                <button id="newArticleBtn" class="btn btn-primary hidden" onclick="showEditor()">
                     ✏️ Новая статья
                 </button>
                 <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
@@ -103,7 +102,7 @@
     <!-- Подвал -->
     <footer class="footer">
         <div class="container">
-            <p>© 2025 Статьер. Все права защищены.</p>
+            <p>© 2024 Мой Блог. Все права защищены.</p>
         </div>
     </footer>
 
