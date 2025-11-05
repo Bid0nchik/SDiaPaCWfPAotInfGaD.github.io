@@ -98,12 +98,12 @@ body {
 }
 
 .btn-secondary {
-    background: #409b9b;
+    background: #5783b1;
     color: white;
 }
 
 .btn-secondary:hover {
-    background: #277b81;
+    background: #405f81;
 }
 
 .btn-danger {
