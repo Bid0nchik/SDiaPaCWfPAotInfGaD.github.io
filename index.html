@@ -54,33 +54,33 @@
             <!-- Редактор статьи (скрыт по умолчанию) -->
             <div id="articleEditor" class="article-editor hidden">
                 <div class="editor-header">
-                    <h2>✏️ Новая статья</h2>
+                    <h2>Новая статья</h2>
                     <div class="editor-actions">
-                        <button onclick="saveArticle()" class="btn btn-primary">💾 Опубликовать</button>
-                        <button onclick="cancelEditing()" class="btn btn-secondary">❌ Отмена</button>
+                        <button onclick="saveArticle()" class="btn btn-primary">Опубликовать</button>
+                        <button onclick="cancelEditing()" class="btn btn-secondary">Отмена</button>
                     </div>
                 </div>
 
                 <div class="editor-form">
                     <!-- Блок 1: Заголовок -->
                     <div class="form-block">
-                        <label for="articleTitle">📌 Заголовок статьи</label>
+                        <label for="articleTitle">Заголовок статьи</label>
                         <input type="text" id="articleTitle" placeholder="Введите заголовок..." class="form-input">
                     </div>
 
                     <!-- Блок 2: Содержание -->
                     <div class="form-block">
-                        <label for="articleContent">📄 Содержание статьи</label>
+                        <label for="articleContent">Содержание статьи</label>
                         <textarea id="articleContent" placeholder="Напишите содержание вашей статьи..." class="form-textarea"></textarea>
                     </div>
 
                     <!-- Блок 3: Фото заголовок -->
                     <div class="form-block">
-                        <label for="articleImage">🖼️ Фото заголовок</label>
+                        <label for="articleImage">Фото заголовок</label>
                         <input type="file" id="articleImage" accept="image/*" class="form-file">
                         <div class="image-controls">
                             <button id="removeImageBtn" class="btn btn-danger hidden" onclick="removeImage()">
-                                🗑️ Удалить картинку
+                                Удалить картинку
                             </button>
                         </div>
                         <div id="imagePreview" class="image-preview"></div>

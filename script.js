@@ -1,41 +1,76 @@
 // Пароль администратора
 const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
-// URL JSON Server
-const API_URL = 'https://sdiapacwfpaotinfgad-github-io.onrender.com';
+// URL JSON Server - ЗАМЕНИТЕ на ваш URL с Render
+const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Глобальные переменные
 let articles = [];
 let currentImage = null;
-let currentMode = null; // 'admin' или 'guest'
+let currentMode = null;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
-    loadArticles();
-    // Принудительно показываем выбор режима при каждом входе
+    console.log('🚀 Инициализация приложения...');
+    loadArticlesFromServer();
     showModeSelection();
     
-    // Обработчик загрузки изображения
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
+
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('📡 Загружаем статьи с сервера...');
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('✅ Статьи загружены:', articles.length);
+        renderArticles();
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки:', error);
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        renderArticles(); // Рендерим пустой список
+    }
+}
+
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    const response = await fetch(`${API_URL}/articles`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+}
 
 // Показать выбор режима
 function showModeSelection() {
     document.getElementById('authModal').classList.remove('hidden');
     document.getElementById('articlesList').classList.add('hidden');
-}
-
-// Вход как администратор (показать поле пароля)
-function enterAsAdmin() {
-    document.getElementById('adminAuth').classList.remove('hidden');
-    document.getElementById('passwordInput').focus();
-}
-
-// Вход как гость
-function enterAsGuest() {
-    currentMode = 'guest';
-    hideAuthModal();
-    showGuestFeatures();
 }
 
 // Проверка пароля администратора
@@ -45,7 +80,6 @@ function checkPassword() {
     const password = passwordInput.value.trim();
 
     if (password === ADMIN_PASSWORD) {
-        // Успешная аутентификация
         currentMode = 'admin';
         hideAuthModal();
         showAdminFeatures();
@@ -55,6 +89,13 @@ function checkPassword() {
         passwordInput.value = '';
         passwordInput.focus();
     }
+}
+
+// Вход как гость
+function enterAsGuest() {
+    currentMode = 'guest';
+    hideAuthModal();
+    showGuestFeatures();
 }
 
 // Скрыть модальное окно аутентификации
@@ -71,12 +112,7 @@ function showAdminFeatures() {
     document.getElementById('userStatus').textContent = 'Администратор';
     document.getElementById('userStatus').className = 'user-status admin';
     
-    // ПОКАЗЫВАЕМ статьи и рендерим их!
     document.getElementById('articlesList').classList.remove('hidden');
-    
-    // Показать уведомление о режиме админа
-    showAdminNotice();
-    renderArticles();
 }
 
 // Показать функции гостя
@@ -88,43 +124,7 @@ function showGuestFeatures() {
     document.getElementById('userStatus').textContent = 'Гость';
     document.getElementById('userStatus').className = 'user-status guest';
     
-    // ПОКАЗЫВАЕМ статьи и рендерим их!
     document.getElementById('articlesList').classList.remove('hidden');
-    
-    // Показать уведомление о гостевом режиме
-    showGuestNotice();
-    renderArticles();
-}
-
-// Показать уведомление для гостя
-function showGuestNotice() {
-    const articlesContainer = document.getElementById('articlesContainer');
-    // Удаляем старое уведомление если есть
-    const oldNotice = document.querySelector('.guest-notice');
-    if (oldNotice) oldNotice.remove();
-    
-    if (articlesContainer && articles.length > 0) {
-        const notice = document.createElement('div');
-        notice.className = 'guest-notice';
-        articlesContainer.parentNode.insertBefore(notice, articlesContainer);
-    }
-}
-
-// Показать уведомление для администратора
-function showAdminNotice() {
-    const articlesContainer = document.getElementById('articlesContainer');
-    // Удаляем старое уведомление если есть
-    const oldNotice = document.querySelector('.guest-notice');
-    if (oldNotice) oldNotice.remove();
-    
-    if (articlesContainer && articles.length > 0) {
-        const notice = document.createElement('div');
-        notice.className = 'guest-notice';
-        notice.style.background = '#d4edda';
-        notice.style.borderColor = '#c3e6cb';
-        notice.style.color = '#155724';
-        articlesContainer.parentNode.insertBefore(notice, articlesContainer);
-    }
 }
 
 // Переход на главную страницу
@@ -132,12 +132,10 @@ function goToHome() {
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articlesList').classList.remove('hidden');
-    renderArticles();
 }
 
 // Выход из системы
 function logout() {
-    // Полностью сбрасываем состояние
     currentMode = null;
     document.getElementById('homeBtn').classList.add('hidden');
     document.getElementById('newArticleBtn').classList.add('hidden');
@@ -147,30 +145,15 @@ function logout() {
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
     
-    // Показываем выбор режима заново
     showModeSelection();
-}
-
-// Загрузка статей из localStorage
-function loadArticles() {
-    const savedArticles = localStorage.getItem('blog_articles');
-    articles = savedArticles ? JSON.parse(savedArticles) : [];
-    console.log('Загружено статей:', articles.length);
-}
-
-// Сохранение статей в localStorage
-function saveArticles() {
-    localStorage.setItem('blog_articles', JSON.stringify(articles));
-    console.log('Сохранено статей:', articles.length);
 }
 
 // Отображение списка статей
 function renderArticles() {
     const container = document.getElementById('articlesContainer');
-    console.log('Рендерим статьи. Режим:', currentMode, 'Количество:', articles.length);
     
     if (!container) {
-        console.error('Контейнер статей не найден!');
+        console.error('❌ Контейнер статей не найден!');
         return;
     }
     
@@ -178,7 +161,7 @@ function renderArticles() {
         container.innerHTML = `
             <div class="no-articles">
                 <h3>📝 Статей пока нет</h3>
-                <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Войдите как администратор чтобы создать статью!'}</p>
+                <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Статьи появятся скоро!'}</p>
             </div>
         `;
         return;
@@ -206,8 +189,9 @@ function renderArticles() {
 // Получение превью текста
 function getPreview(text, maxLength = 150) {
     if (!text) return 'Нет содержания';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    const cleanText = text.replace(/<br>/g, ' ').replace(/<[^>]*>/g, '');
+    if (cleanText.length <= maxLength) return cleanText;
+    return cleanText.substring(0, maxLength) + '...';
 }
 
 // Форматирование даты
@@ -278,7 +262,6 @@ function showEditor() {
     document.getElementById('removeImageBtn').classList.add('hidden');
     currentImage = null;
     
-    // Фокус на заголовок
     document.getElementById('articleTitle').focus();
 }
 
@@ -296,16 +279,10 @@ function hideEditor() {
 }
 
 // Сохранение статьи
-function saveArticle() {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
+async function saveArticle() {
     const title = document.getElementById('articleTitle').value.trim();
     const content = document.getElementById('articleContent').value.trim();
 
-    // Валидация
     if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
         document.getElementById('articleTitle').focus();
@@ -317,7 +294,6 @@ function saveArticle() {
         return;
     }
 
-    // Создаем новую статью
     const newArticle = {
         id: generateId(),
         title: title,
@@ -326,11 +302,20 @@ function saveArticle() {
         date: new Date().toISOString()
     };
 
-    articles.push(newArticle);
-    saveArticles();
-    renderArticles();
-    hideEditor();
-    goToHome();
+    try {
+        // Сохраняем на сервер
+        await saveArticleToServer(newArticle);
+        
+        // Обновляем список статей с сервера
+        await loadArticlesFromServer();
+        
+        hideEditor();
+        goToHome();
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Не удалось сохранить статью. Проверьте подключение к серверу.');
+    }
 }
 
 // Генерация ID
@@ -345,6 +330,7 @@ function viewArticle(articleId) {
         alert('Статья не найдена!');
         return;
     }
+    
     document.getElementById('articlesList').classList.add('hidden');
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.remove('hidden');
@@ -352,7 +338,7 @@ function viewArticle(articleId) {
     const container = document.getElementById('articleContentContainer');
     container.innerHTML = `
         <div class="article-meta">
-            <p>📅 Опубликовано: ${formatDate(article.date)}</p>
+            <p>Опубликовано: ${formatDate(article.date)}</p>
         </div>
         <h1>${article.title}</h1>
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
@@ -360,7 +346,7 @@ function viewArticle(articleId) {
         ${currentMode === 'admin' ? `
             <div style="text-align: center; margin-top: 2rem;">
                 <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                    🗑️ Удалить статью
+                    Удалить статью
                 </button>
             </div>
         ` : ''}
@@ -374,16 +360,34 @@ function hideArticleView() {
 }
 
 // Удаление статьи
-function deleteArticle(articleId) {
-    if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
+async function deleteArticle(articleId) {
     if (confirm('Вы уверены, что хотите удалить эту статью?')) {
-        articles = articles.filter(a => a.id !== articleId);
-        saveArticles();
-        renderArticles();
-        hideArticleView();
+        try {
+            await deleteArticleFromServer(articleId);
+            
+            // Обновляем список статей с сервера
+            await loadArticlesFromServer();
+            
+            hideArticleView();
+            
+        } catch (error) {
+            alert('Не удалось удалить статью. Проверьте подключение к серверу.');
+        }
+    }
+}
+
+// Показать ошибку
+function showError(message) {
+    const container = document.getElementById('articlesContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="no-articles">
+                <h3>❌ Ошибка загрузки</h3>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="loadArticlesFromServer()">
+                    🔄 Повторить попытку
+                </button>
+            </div>
+        `;
     }
 }
