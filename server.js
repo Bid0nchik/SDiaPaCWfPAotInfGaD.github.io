@@ -99,32 +99,28 @@ server.use((req, res, next) => {
     
     // Красивое логирование в консоль Render
     console.log('🌐 НОВЫЙ ПОСЕТИТЕЛЬ ======================');
-    console.log('📋 ОСНОВНАЯ ИНФОРМАЦИЯ:');
-    console.log(`   📍 IP адрес: ${visitor.ip}`);
-    console.log(`   🕐 Время: ${visitor.time}`);
-    console.log(`   🌐 URL: ${visitor.url}`);
-    console.log(`   🔗 Метод: ${visitor.method}`);
-    console.log(`   🛡️  Протокол: ${visitor.protocol} (${visitor.secure ? 'secure' : 'not secure'})`);
-    console.log(`   🏠 Хост: ${visitor.host}`);
+    console.log(`   IP адрес: ${visitor.ip}`);
+    console.log(`   Время: ${visitor.time}`);
+    console.log(`   URL: ${visitor.url}`);
+    console.log(`   Метод: ${visitor.method}`);
+    console.log(`   Протокол: ${visitor.protocol} (${visitor.secure ? 'secure' : 'not secure'})`);
+    console.log(`   Хост: ${visitor.host}`);
     
-    console.log('📱 ИНФОРМАЦИЯ О КЛИЕНТЕ:');
-    console.log(`   🔍 Браузер: ${visitor.browser}`);
-    console.log(`   💻 ОС: ${visitor.operatingSystem}`);
-    console.log(`   📟 Устройство: ${visitor.deviceType}`);
-    console.log(`   🈯 Язык: ${visitor.language}`);
-    console.log(`   📏 Кодировка: ${visitor.encoding}`);
+    console.log(`   Браузер: ${visitor.browser}`);
+    console.log(`   ОС: ${visitor.operatingSystem}`);
+    console.log(`   Устройство: ${visitor.deviceType}`);
+    console.log(`   Язык: ${visitor.language}`);
+    console.log(`   Кодировка: ${visitor.encoding}`);
     
-    console.log('📊 ИСТОЧНИК ТРАФИКА:');
-    console.log(`   🔗 Referer: ${visitor.referer}`);
-    console.log(`   🎯 Origin: ${visitor.origin}`);
+    console.log(`   Referer: ${visitor.referer}`);
+    console.log(`   Origin: ${visitor.origin}`);
     
-    console.log('📨 ВАЖНЫЕ ЗАГОЛОВКИ:');
-    console.log(`   👤 User-Agent: ${visitor.userAgent}`);
+    console.log(`   User-Agent: ${visitor.userAgent}`);
     if (visitor.headers['x-forwarded-proto']) {
-        console.log(`   🔄 X-Forwarded-Proto: ${visitor.headers['x-forwarded-proto']}`);
+        console.log(`   X-Forwarded-Proto: ${visitor.headers['x-forwarded-proto']}`);
     }
     if (visitor.headers['x-forwarded-host']) {
-        console.log(`   🏠 X-Forwarded-Host: ${visitor.headers['x-forwarded-host']}`);
+        console.log(`   X-Forwarded-Host: ${visitor.headers['x-forwarded-host']}`);
     }
     
     console.log('===========================================');
