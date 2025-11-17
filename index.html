@@ -25,18 +25,22 @@
     <header class="header">
         <div class="container">
             <h1>Статьер</h1>
-            <div class="header-actions">
-                <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
-                    🏠 Главная
-                </button>
-                <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
-                    ✏️ Новая статья
-                </button>
-                <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
-                    🔒 Выйти
-                </button>
-                <span id="userStatus" class="user-status hidden"></span>
-            </div>
+            <!-- В блоке header-actions добавьте кнопку темы -->
+<div class="header-actions">
+    <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
+        Главная
+    </button>
+    <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
+        Новая статья
+    </button>
+    <button id="themeToggle" class="btn btn-secondary hidden" onclick="toggleTheme()">
+        Тёмная тема
+    </button>
+    <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
+        Выйти
+    </button>
+    <span id="userStatus" class="user-status hidden"></span>
+</div>
         </div>
     </header>
 
@@ -54,9 +58,9 @@
             <!-- Редактор статьи (скрыт по умолчанию) -->
             <div id="articleEditor" class="article-editor hidden">
                 <div class="editor-header">
-                    <h2>Новая статья</h2>
+                    <h2 id="editorTitle">Новая статья</h2>
                     <div class="editor-actions">
-                        <button onclick="saveArticle()" class="btn btn-primary">Опубликовать</button>
+                        <button onclick="saveArticle()" class="btn btn-primary" id="saveButton">Опубликовать</button>
                         <button onclick="cancelEditing()" class="btn btn-secondary">Отмена</button>
                     </div>
                 </div>
