@@ -8,6 +8,7 @@ const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 let articles = [];
 let currentImage = null;
 let currentMode = null;
+let currentEditingArticleId = null;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
@@ -47,6 +48,23 @@ async function saveArticleToServer(article) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Обновление статьи на сервере
+async function updateArticleOnServer(articleId, articleData) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData)
     });
 
     if (!response.ok) {
@@ -243,12 +261,15 @@ function removeImage() {
     currentImage = null;
 }
 
-// Показать редактор
+// Показать редактор для новой статьи
 function showEditor() {
     if (currentMode !== 'admin') {
         alert('❌ Доступ запрещен! Требуются права администратора.');
         return;
     }
+    
+    // Сбрасываем режим редактирования
+    currentEditingArticleId = null;
     
     document.getElementById('articlesList').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
@@ -262,12 +283,65 @@ function showEditor() {
     document.getElementById('removeImageBtn').classList.add('hidden');
     currentImage = null;
     
+    // Устанавливаем тексты для новой статьи
+    document.getElementById('editorTitle').textContent = 'Новая статья';
+    document.getElementById('saveButton').textContent = 'Опубликовать';
+    
+    document.getElementById('articleTitle').focus();
+}
+
+// Функция редактирования статьи
+function editArticle(articleId) {
+    if (currentMode !== 'admin') {
+        alert('❌ Доступ запрещен! Требуются права администратора.');
+        return;
+    }
+
+    const article = articles.find(a => a.id === articleId);
+    if (!article) {
+        alert('Статья не найдена!');
+        return;
+    }
+
+    // Сохраняем ID редактируемой статьи
+    currentEditingArticleId = articleId;
+
+    // Показываем редактор и скрываем просмотр
+    document.getElementById('articleView').classList.add('hidden');
+    document.getElementById('articleEditor').classList.remove('hidden');
+
+    // Заполняем форму данными статьи
+    document.getElementById('articleTitle').value = article.title;
+    document.getElementById('articleContent').value = article.content;
+    
+    // Обрабатываем изображение
+    const preview = document.getElementById('imagePreview');
+    const removeBtn = document.getElementById('removeImageBtn');
+    
+    if (article.image) {
+        currentImage = article.image;
+        preview.innerHTML = `<img src="${article.image}" alt="Предпросмотр">`;
+        removeBtn.classList.remove('hidden');
+    } else {
+        preview.innerHTML = '';
+        removeBtn.classList.add('hidden');
+        currentImage = null;
+    }
+
+    // Меняем заголовок редактора и кнопку
+    document.getElementById('editorTitle').textContent = 'Редактирование статьи';
+    document.getElementById('saveButton').textContent = 'Сохранить изменения';
+
     document.getElementById('articleTitle').focus();
 }
 
 // Отмена редактирования
 function cancelEditing() {
-    if (confirm('Вы уверены, что хотите отменить создание статьи? Все несохраненные данные будут потеряны.')) {
+    const message = currentEditingArticleId ? 
+        'Вы уверены, что хотите отменить редактирование? Все несохраненные изменения будут потеряны.' :
+        'Вы уверены, что хотите отменить создание статьи? Все несохраненные данные будут потеряны.';
+    
+    if (confirm(message)) {
         hideEditor();
         goToHome();
     }
@@ -276,9 +350,10 @@ function cancelEditing() {
 // Скрыть редактор
 function hideEditor() {
     document.getElementById('articleEditor').classList.add('hidden');
+    currentEditingArticleId = null;
 }
 
-// Сохранение статьи
+// Сохранение статьи (создание или редактирование)
 async function saveArticle() {
     const title = document.getElementById('articleTitle').value.trim();
     const content = document.getElementById('articleContent').value.trim();
@@ -294,19 +369,33 @@ async function saveArticle() {
         return;
     }
 
-    const newArticle = {
-        id: generateId(),
-        title: title,
-        content: content,
-        image: currentImage,
-        date: new Date().toISOString()
-    };
-
     try {
-        // Сохраняем на сервер
-        await saveArticleToServer(newArticle);
-        
-        // Обновляем список статей с сервера
+        if (currentEditingArticleId) {
+            // Режим редактирования
+            const articleData = {
+                title: title,
+                content: content,
+                image: currentImage,
+                date: new Date().toISOString()
+            };
+
+            await updateArticleOnServer(currentEditingArticleId, articleData);
+            console.log('✅ Статья обновлена');
+        } else {
+            // Режим создания новой статьи
+            const newArticle = {
+                id: generateId(),
+                title: title,
+                content: content,
+                image: currentImage,
+                date: new Date().toISOString()
+            };
+
+            await saveArticleToServer(newArticle);
+            console.log('✅ Статья создана');
+        }
+
+        // Обновляем список статей
         await loadArticlesFromServer();
         
         hideEditor();
@@ -336,21 +425,32 @@ function viewArticle(articleId) {
     document.getElementById('articleView').classList.remove('hidden');
 
     const container = document.getElementById('articleContentContainer');
-    container.innerHTML = `
+    
+    // Создаем HTML для статьи с кнопками для админа
+    let articleHTML = `
         <div class="article-meta">
             <p>Опубликовано: ${formatDate(article.date)}</p>
         </div>
         <h1>${article.title}</h1>
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
         <div class="article-text">${article.content.replace(/\n/g, '<br>')}</div>
-        ${currentMode === 'admin' ? `
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                    Удалить статью
-                </button>
-            </div>
-        ` : ''}
     `;
+    
+    // В функции viewArticle замените блок с кнопками администратора на:
+if (currentMode === 'admin') {
+    articleHTML += `
+        <div class="article-admin-actions">
+            <button class="btn btn-primary" onclick="editArticle('${article.id}')">
+                Редактировать статью
+            </button>
+            <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
+                Удалить статью
+            </button>
+        </div>
+    `;
+}
+    
+    container.innerHTML = articleHTML;
 }
 
 // Скрыть просмотр статьи
@@ -390,4 +490,97 @@ function showError(message) {
             </div>
         `;
     }
+}
+// Добавьте в глобальные переменные
+let currentTheme = 'dark';
+
+// Добавьте в функцию инициализации
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Инициализация приложения...');
+    loadArticlesFromServer();
+    showModeSelection();
+    loadTheme();
+    toggleTheme()
+    document.getElementById('articleImage').addEventListener('change', handleImageUpload);
+});
+
+// Функция смены темы
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme();
+    saveTheme();
+    updateThemeButton();
+}
+
+// Применение темы
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+}
+
+// Сохранение темы в localStorage
+function saveTheme() {
+    localStorage.setItem('theme', currentTheme);
+}
+
+// Обновим функцию loadTheme
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else {
+        // Устанавливаем тёмную тему по умолчанию
+        currentTheme = 'dark';
+    }
+    applyTheme();
+    updateThemeButton();
+}
+
+// Обновим функцию updateThemeButton
+function updateThemeButton() {
+    const themeButton = document.getElementById('themeToggle');
+    if (themeButton) {
+        themeButton.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+    }
+}
+
+// Обновите функции показа интерфейса чтобы показывать кнопку темы
+function showAdminFeatures() {
+    document.getElementById('themeToggle').classList.remove('hidden');
+    document.getElementById('homeBtn').classList.remove('hidden');
+    document.getElementById('newArticleBtn').classList.remove('hidden');
+    document.getElementById('logoutBtn').classList.remove('hidden');
+    document.getElementById('userStatus').classList.remove('hidden');
+    document.getElementById('userStatus').textContent = 'Администратор';
+    document.getElementById('userStatus').className = 'user-status admin';
+    
+    document.getElementById('articlesList').classList.remove('hidden');
+    updateThemeButton();
+}
+
+function showGuestFeatures() {
+    document.getElementById('themeToggle').classList.remove('hidden');
+    document.getElementById('homeBtn').classList.remove('hidden');
+    document.getElementById('newArticleBtn').classList.add('hidden');
+    document.getElementById('logoutBtn').classList.remove('hidden');
+    document.getElementById('userStatus').classList.remove('hidden');
+    document.getElementById('userStatus').textContent = 'Гость';
+    document.getElementById('userStatus').className = 'user-status guest';
+    
+    document.getElementById('articlesList').classList.remove('hidden');
+    updateThemeButton();
+}
+
+// Обновите функцию logout чтобы скрывать кнопку темы
+function logout() {
+    currentMode = null;
+    document.getElementById('themeToggle').classList.add('hidden');
+    document.getElementById('homeBtn').classList.add('hidden');
+    document.getElementById('newArticleBtn').classList.add('hidden');
+    document.getElementById('logoutBtn').classList.add('hidden');
+    document.getElementById('userStatus').classList.add('hidden');
+    document.getElementById('articlesList').classList.add('hidden');
+    document.getElementById('articleEditor').classList.add('hidden');
+    document.getElementById('articleView').classList.add('hidden');
+    
+    showModeSelection();
 }
