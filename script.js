@@ -380,14 +380,18 @@ async function saveArticle() {
     }
 }
 
-// Сохранение статьи на сервер
+// В script.js обновите эти функции:
+
 async function saveArticleToServer(article) {
     const response = await fetch(`${API_URL}/articles`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(article)
+        body: JSON.stringify({
+            ...article,
+            password: 'admin123' // временный пароль для тестирования
+        })
     });
 
     if (!response.ok) {
@@ -397,14 +401,16 @@ async function saveArticleToServer(article) {
     return await response.json();
 }
 
-// Обновление статьи на сервере
 async function updateArticleOnServer(articleId, articleData) {
     const response = await fetch(`${API_URL}/articles/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(articleData)
+        body: JSON.stringify({
+            ...articleData,
+            password: 'admin123' // временный пароль для тестирования
+        })
     });
 
     if (!response.ok) {
@@ -414,10 +420,15 @@ async function updateArticleOnServer(articleId, articleData) {
     return await response.json();
 }
 
-// Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
     const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            password: 'admin123' // временный пароль для тестирования
+        })
     });
 
     if (!response.ok) {
