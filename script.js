@@ -496,45 +496,48 @@ function showError(message) {
 // Добавьте в глобальные переменные
 let currentTheme = 'dark';
 
-// Добавьте в функцию инициализации
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Инициализация приложения...');
+    console.log('Инициализация приложения...');
+    loadTheme(); // Загружаем тему ПЕРВОЙ!
     loadArticlesFromServer();
     showModeSelection();
-    loadTheme();
-    toggleTheme()
+    
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
 
-// Функция смены темы
-function toggleTheme() {
-    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-    applyTheme();
-    saveTheme();
-    updateThemeButton();
-}
-
-// Применение темы
-function applyTheme() {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-}
-
-// Сохранение темы в localStorage
-function saveTheme() {
-    localStorage.setItem('theme', currentTheme);
-}
-
 // Обновим функцию loadTheme
 function loadTheme() {
-    const savedTheme = localStorage.getItem('theme');
+    // Пробуем загрузить тему из localStorage
+    const savedTheme = localStorage.getItem('blog_theme');
     if (savedTheme) {
         currentTheme = savedTheme;
     } else {
-        // Устанавливаем тёмную тему по умолчанию
+        // Если нет сохраненной темы, используем темную по умолчанию
         currentTheme = 'dark';
     }
     applyTheme();
     updateThemeButton();
+}
+
+// Обновим функцию toggleTheme
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme();
+    // Сохраняем в localStorage
+    localStorage.setItem('blog_theme', currentTheme);
+    updateThemeButton();
+}
+
+// Функции applyTheme и updateThemeButton остаются без изменений
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+}
+
+function updateThemeButton() {
+    const themeButton = document.getElementById('themeToggle');
+    if (themeButton) {
+        themeButton.textContent = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
+    }
 }
 
 // Обновим функцию updateThemeButton
@@ -545,7 +548,6 @@ function updateThemeButton() {
     }
 }
 
-// Обновите функции показа интерфейса чтобы показывать кнопку темы
 function showAdminFeatures() {
     document.getElementById('themeToggle').classList.remove('hidden');
     document.getElementById('homeBtn').classList.remove('hidden');
@@ -556,6 +558,7 @@ function showAdminFeatures() {
     document.getElementById('userStatus').className = 'user-status admin';
     
     document.getElementById('articlesList').classList.remove('hidden');
+    // Тема уже загружена, просто обновляем кнопку
     updateThemeButton();
 }
 
@@ -569,21 +572,7 @@ function showGuestFeatures() {
     document.getElementById('userStatus').className = 'user-status guest';
     
     document.getElementById('articlesList').classList.remove('hidden');
+    // Тема уже загружена, просто обновляем кнопку
     updateThemeButton();
-}
-
-// Обновите функцию logout чтобы скрывать кнопку темы
-function logout() {
-    currentMode = null;
-    document.getElementById('themeToggle').classList.add('hidden');
-    document.getElementById('homeBtn').classList.add('hidden');
-    document.getElementById('newArticleBtn').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
-    document.getElementById('userStatus').classList.add('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-    document.getElementById('articleEditor').classList.add('hidden');
-    document.getElementById('articleView').classList.add('hidden');
-    
-    showModeSelection();
 }
 
