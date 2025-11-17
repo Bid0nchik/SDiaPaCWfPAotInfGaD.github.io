@@ -4,7 +4,16 @@ const middlewares = jsonServer.defaults();
 
 const PORT = process.env.PORT || 3001;
 
-// Создаем базу данных в памяти
+// Получаем пароль из переменных окружения
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+// Проверяем что пароль установлен
+if (!ADMIN_PASSWORD) {
+    console.error('❌ ERROR: ADMIN_PASSWORD environment variable is not set');
+    console.error('Please set ADMIN_PASSWORD in Render environment variables');
+    process.exit(1);
+}
+
 let db = {
   articles: []
 };
@@ -19,6 +28,17 @@ server.use((req, res, next) => {
     next();
 });
 
+// Эндпоинт для проверки пароля администратора
+server.post('/verify-admin', (req, res) => {
+    const { password } = req.body;
+    
+    if (password === ADMIN_PASSWORD) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, error: 'Invalid password' });
+    }
+});
+
 // GET /articles
 server.get('/articles', (req, res) => {
     res.json(db.articles);
@@ -31,7 +51,7 @@ server.post('/articles', (req, res) => {
         ...req.body,
         date: new Date().toISOString()
     };
-    db.articles.unshift(article); // Добавляем в начало
+    db.articles.unshift(article);
     res.status(201).json(article);
 });
 
@@ -66,11 +86,8 @@ server.get('/health', (req, res) => {
     });
 });
 
-// Статистика
-server.get('/stats', (req, res) => {
-    res.json({
-        totalArticles: db.articles.length,
-        server: 'Memory DB',
-        uptime: process.uptime()
-    });
+server.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`📍 Admin authentication: ENABLED`);
+    console.log(`📊 Total articles: ${db.articles.length}`);
 });
