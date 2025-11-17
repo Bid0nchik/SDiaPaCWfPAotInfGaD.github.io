@@ -505,7 +505,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
 
-// Обновим функцию loadTheme
 function loadTheme() {
     // Пробуем загрузить тему из localStorage
     const savedTheme = localStorage.getItem('blog_theme');
@@ -519,18 +518,24 @@ function loadTheme() {
     updateThemeButton();
 }
 
-// Обновим функцию toggleTheme
+function applyTheme() {
+    // Применяем тему ко всему документу сразу
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    // Также применяем к модальному окну если оно есть
+    const authModal = document.getElementById('authModal');
+    if (authModal) {
+        authModal.setAttribute('data-theme', currentTheme);
+    }
+}
+
 function toggleTheme() {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     applyTheme();
     // Сохраняем в localStorage
     localStorage.setItem('blog_theme', currentTheme);
     updateThemeButton();
-}
-
-// Функции applyTheme и updateThemeButton остаются без изменений
-function applyTheme() {
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    console.log('Тема изменена на:', currentTheme);
 }
 
 function updateThemeButton() {
@@ -575,4 +580,5 @@ function showGuestFeatures() {
     // Тема уже загружена, просто обновляем кнопку
     updateThemeButton();
 }
+
 
