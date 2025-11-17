@@ -1,7 +1,6 @@
-// Пароль администратора
-const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
+// const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
-// URL JSON Server - ЗАМЕНИТЕ на ваш URL с Render
+// URL JSON Server
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Глобальные переменные
@@ -9,15 +8,51 @@ let articles = [];
 let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
+let currentTheme = 'dark';
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Инициализация приложения...');
+    console.log('Инициализация приложения...');
+    loadTheme();
     loadArticlesFromServer();
     showModeSelection();
     
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
+
+// Функция проверки пароля
+async function checkPassword() {
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const password = passwordInput.value.trim();
+
+    try {
+        const response = await fetch(`${API_URL}/verify-admin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: password })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            currentMode = 'admin';
+            hideAuthModal();
+            showAdminFeatures();
+            errorMessage.textContent = '';
+        } else {
+            errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    } catch (error) {
+        errorMessage.textContent = 'Ошибка подключения к серверу';
+        console.error('Auth error:', error);
+    }
+}
+
 
 // Обновите функции работы с сервером:
 
@@ -36,15 +71,12 @@ async function loadArticlesFromServer() {
         
     } catch (error) {
         console.error('Ошибка загрузки:', error);
-        // Показываем локальные статьи если сервер недоступен
-        if (articles.length > 0) {
-            renderArticles();
-        } else {
-            showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
-        }
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        renderArticles();
     }
 }
 
+// Сохранение статьи на сервер
 async function saveArticleToServer(article) {
     const response = await fetch(`${API_URL}/articles`, {
         method: 'POST',
@@ -580,5 +612,6 @@ function showGuestFeatures() {
     // Тема уже загружена, просто обновляем кнопку
     updateThemeButton();
 }
+
 
 
