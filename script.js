@@ -1,5 +1,4 @@
-// const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
-
+// script.js
 // URL JSON Server
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
@@ -53,96 +52,6 @@ async function checkPassword() {
     }
 }
 
-
-// Обновите функции работы с сервером:
-
-async function loadArticlesFromServer() {
-    try {
-        console.log('Загружаем статьи с сервера...');
-        const response = await fetch(`${API_URL}/articles`);
-        
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-        
-        articles = await response.json();
-        console.log('Статьи загружены:', articles.length);
-        renderArticles();
-        
-    } catch (error) {
-        console.error('Ошибка загрузки:', error);
-        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
-        renderArticles();
-    }
-}
-
-// Сохранение статьи на сервер
-async function saveArticleToServer(article) {
-    const response = await fetch(`${API_URL}/articles`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(article)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-async function updateArticleOnServer(articleId, articleData) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'DELETE'
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-}
-
-// Показать выбор режима
-function showModeSelection() {
-    document.getElementById('authModal').classList.remove('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-}
-
-// Проверка пароля администратора
-function checkPassword() {
-    const passwordInput = document.getElementById('passwordInput');
-    const errorMessage = document.getElementById('errorMessage');
-    const password = passwordInput.value.trim();
-
-    if (password === ADMIN_PASSWORD) {
-        currentMode = 'admin';
-        hideAuthModal();
-        showAdminFeatures();
-        errorMessage.textContent = '';
-    } else {
-        errorMessage.textContent = '❌ Неверный пароль! Попробуйте снова.';
-        passwordInput.value = '';
-        passwordInput.focus();
-    }
-}
-
 // Вход как гость
 function enterAsGuest() {
     currentMode = 'guest';
@@ -157,6 +66,7 @@ function hideAuthModal() {
 
 // Показать функции администратора
 function showAdminFeatures() {
+    document.getElementById('themeToggle').classList.remove('hidden');
     document.getElementById('homeBtn').classList.remove('hidden');
     document.getElementById('newArticleBtn').classList.remove('hidden');
     document.getElementById('logoutBtn').classList.remove('hidden');
@@ -169,6 +79,7 @@ function showAdminFeatures() {
 
 // Показать функции гостя
 function showGuestFeatures() {
+    document.getElementById('themeToggle').classList.remove('hidden');
     document.getElementById('homeBtn').classList.remove('hidden');
     document.getElementById('newArticleBtn').classList.add('hidden');
     document.getElementById('logoutBtn').classList.remove('hidden');
@@ -189,6 +100,7 @@ function goToHome() {
 // Выход из системы
 function logout() {
     currentMode = null;
+    document.getElementById('themeToggle').classList.add('hidden');
     document.getElementById('homeBtn').classList.add('hidden');
     document.getElementById('newArticleBtn').classList.add('hidden');
     document.getElementById('logoutBtn').classList.add('hidden');
@@ -200,19 +112,46 @@ function logout() {
     showModeSelection();
 }
 
+// Показать выбор режима
+function showModeSelection() {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.getElementById('articlesList').classList.add('hidden');
+}
+
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('Загружаем статьи с сервера...');
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('Статьи загружены:', articles.length);
+        renderArticles();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки:', error);
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        renderArticles();
+    }
+}
+
 // Отображение списка статей
 function renderArticles() {
     const container = document.getElementById('articlesContainer');
     
     if (!container) {
-        console.error('❌ Контейнер статей не найден!');
+        console.error('Контейнер статей не найден!');
         return;
     }
     
     if (articles.length === 0) {
         container.innerHTML = `
             <div class="no-articles">
-                <h3>📝 Статей пока нет</h3>
+                <h3>Статей пока нет</h3>
                 <p>${currentMode === 'admin' ? 'Нажмите "Новая статья" чтобы создать первую!' : 'Статьи появятся скоро!'}</p>
             </div>
         `;
@@ -227,7 +166,7 @@ function renderArticles() {
             ${article.image ? `
                 <img src="${article.image}" alt="${article.title}" class="article-card-image">
             ` : `
-                <div class="article-card-placeholder">📄 Статья</div>
+                <div class="article-card-placeholder">Статья</div>
             `}
             <div class="article-card-content">
                 <h3 class="article-card-title">${article.title}</h3>
@@ -298,7 +237,7 @@ function removeImage() {
 // Показать редактор для новой статьи
 function showEditor() {
     if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
+        alert('Доступ запрещен! Требуются права администратора.');
         return;
     }
     
@@ -327,7 +266,7 @@ function showEditor() {
 // Функция редактирования статьи
 function editArticle(articleId) {
     if (currentMode !== 'admin') {
-        alert('❌ Доступ запрещен! Требуются права администратора.');
+        alert('Доступ запрещен! Требуются права администратора.');
         return;
     }
 
@@ -414,7 +353,7 @@ async function saveArticle() {
             };
 
             await updateArticleOnServer(currentEditingArticleId, articleData);
-            console.log('✅ Статья обновлена');
+            console.log('Статья обновлена');
         } else {
             // Режим создания новой статьи
             const newArticle = {
@@ -426,7 +365,7 @@ async function saveArticle() {
             };
 
             await saveArticleToServer(newArticle);
-            console.log('✅ Статья создана');
+            console.log('Статья создана');
         }
 
         // Обновляем список статей
@@ -438,6 +377,51 @@ async function saveArticle() {
     } catch (error) {
         console.error('Ошибка:', error);
         alert('Не удалось сохранить статью. Проверьте подключение к серверу.');
+    }
+}
+
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    const response = await fetch(`${API_URL}/articles`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Обновление статьи на сервере
+async function updateArticleOnServer(articleId, articleData) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
     }
 }
 
@@ -470,19 +454,19 @@ function viewArticle(articleId) {
         <div class="article-text">${article.content.replace(/\n/g, '<br>')}</div>
     `;
     
-    // В функции viewArticle замените блок с кнопками администратора на:
-if (currentMode === 'admin') {
-    articleHTML += `
-        <div class="article-admin-actions">
-            <button class="btn btn-primary" onclick="editArticle('${article.id}')">
-                Редактировать статью
-            </button>
-            <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                Удалить статью
-            </button>
-        </div>
-    `;
-}
+    // Добавляем кнопки для администратора
+    if (currentMode === 'admin') {
+        articleHTML += `
+            <div class="article-admin-actions">
+                <button class="btn btn-primary" onclick="editArticle('${article.id}')">
+                    Редактировать статью
+                </button>
+                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
+                    Удалить статью
+                </button>
+            </div>
+        `;
+    }
     
     container.innerHTML = articleHTML;
 }
@@ -510,64 +494,25 @@ async function deleteArticle(articleId) {
     }
 }
 
-// Показать ошибку
-function showError(message) {
-    const container = document.getElementById('articlesContainer');
-    if (container) {
-        container.innerHTML = `
-            <div class="no-articles">
-                <h3>❌ Ошибка загрузки</h3>
-                <p>${message}</p>
-                <button class="btn btn-primary" onclick="loadArticlesFromServer()">
-                    🔄 Повторить попытку
-                </button>
-            </div>
-        `;
-    }
-}
-// Добавьте в глобальные переменные
-let currentTheme = 'dark';
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Инициализация приложения...');
-    loadTheme(); // Загружаем тему ПЕРВОЙ!
-    loadArticlesFromServer();
-    showModeSelection();
-    
-    document.getElementById('articleImage').addEventListener('change', handleImageUpload);
-});
-
+// Функции для темы
 function loadTheme() {
-    // Пробуем загрузить тему из localStorage
     const savedTheme = localStorage.getItem('blog_theme');
     if (savedTheme) {
         currentTheme = savedTheme;
-    } else {
-        // Если нет сохраненной темы, используем темную по умолчанию
-        currentTheme = 'dark';
     }
     applyTheme();
     updateThemeButton();
 }
 
 function applyTheme() {
-    // Применяем тему ко всему документу сразу
     document.documentElement.setAttribute('data-theme', currentTheme);
-    
-    // Также применяем к модальному окну если оно есть
-    const authModal = document.getElementById('authModal');
-    if (authModal) {
-        authModal.setAttribute('data-theme', currentTheme);
-    }
 }
 
 function toggleTheme() {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     applyTheme();
-    // Сохраняем в localStorage
     localStorage.setItem('blog_theme', currentTheme);
     updateThemeButton();
-    console.log('Тема изменена на:', currentTheme);
 }
 
 function updateThemeButton() {
@@ -577,41 +522,18 @@ function updateThemeButton() {
     }
 }
 
-// Обновим функцию updateThemeButton
-function updateThemeButton() {
-    const themeButton = document.getElementById('themeToggle');
-    if (themeButton) {
-        themeButton.textContent = currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема';
+// Показать ошибку
+function showError(message) {
+    const container = document.getElementById('articlesContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="no-articles">
+                <h3>Ошибка загрузки</h3>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="loadArticlesFromServer()">
+                    Повторить попытку
+                </button>
+            </div>
+        `;
     }
 }
-
-function showAdminFeatures() {
-    document.getElementById('themeToggle').classList.remove('hidden');
-    document.getElementById('homeBtn').classList.remove('hidden');
-    document.getElementById('newArticleBtn').classList.remove('hidden');
-    document.getElementById('logoutBtn').classList.remove('hidden');
-    document.getElementById('userStatus').classList.remove('hidden');
-    document.getElementById('userStatus').textContent = 'Администратор';
-    document.getElementById('userStatus').className = 'user-status admin';
-    
-    document.getElementById('articlesList').classList.remove('hidden');
-    // Тема уже загружена, просто обновляем кнопку
-    updateThemeButton();
-}
-
-function showGuestFeatures() {
-    document.getElementById('themeToggle').classList.remove('hidden');
-    document.getElementById('homeBtn').classList.remove('hidden');
-    document.getElementById('newArticleBtn').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.remove('hidden');
-    document.getElementById('userStatus').classList.remove('hidden');
-    document.getElementById('userStatus').textContent = 'Гость';
-    document.getElementById('userStatus').className = 'user-status guest';
-    
-    document.getElementById('articlesList').classList.remove('hidden');
-    // Тема уже загружена, просто обновляем кнопку
-    updateThemeButton();
-}
-
-
-
