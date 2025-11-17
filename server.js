@@ -170,17 +170,3 @@ server.get('/visitor-stats', (req, res) => {
 // Основные endpoint'ы
 server.use(middlewares);
 server.use(router);
-
-server.listen(PORT, () => {
-    console.log('🚀 ==================================');
-    console.log('✅ Blog API Server запущен!');
-    console.log(`📍 Порт: ${PORT}`);
-    console.log('📊 ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ ВКЛЮЧЕНО');
-    console.log('🔧 Endpoints:');
-    console.log('   /check-visitor - проверить отслеживание');
-    console.log('   /visitor-stats - статистика');
-    console.log('   /articles - основные данные');
-    console.log('🚀 ==================================');
-    console.log('👁️  Каждый посетитель будет логироваться');
-    console.log('=========================================');
-});
