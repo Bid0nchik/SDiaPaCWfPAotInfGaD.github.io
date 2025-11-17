@@ -4,7 +4,8 @@
   "description": "JSON Server for blog API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "json-server": "^0.17.4"
