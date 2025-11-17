@@ -19,10 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
 
-// Загрузка статей с сервера
+// Обновите функции работы с сервером:
+
 async function loadArticlesFromServer() {
     try {
-        console.log('📡 Загружаем статьи с сервера...');
+        console.log('Загружаем статьи с сервера...');
         const response = await fetch(`${API_URL}/articles`);
         
         if (!response.ok) {
@@ -30,17 +31,20 @@ async function loadArticlesFromServer() {
         }
         
         articles = await response.json();
-        console.log('✅ Статьи загружены:', articles.length);
+        console.log('Статьи загружены:', articles.length);
         renderArticles();
         
     } catch (error) {
-        console.error('❌ Ошибка загрузки:', error);
-        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
-        renderArticles(); // Рендерим пустой список
+        console.error('Ошибка загрузки:', error);
+        // Показываем локальные статьи если сервер недоступен
+        if (articles.length > 0) {
+            renderArticles();
+        } else {
+            showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        }
     }
 }
 
-// Сохранение статьи на сервер
 async function saveArticleToServer(article) {
     const response = await fetch(`${API_URL}/articles`, {
         method: 'POST',
@@ -57,7 +61,6 @@ async function saveArticleToServer(article) {
     return await response.json();
 }
 
-// Обновление статьи на сервере
 async function updateArticleOnServer(articleId, articleData) {
     const response = await fetch(`${API_URL}/articles/${articleId}`, {
         method: 'PATCH',
@@ -74,7 +77,6 @@ async function updateArticleOnServer(articleId, articleData) {
     return await response.json();
 }
 
-// Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
     const response = await fetch(`${API_URL}/articles/${articleId}`, {
         method: 'DELETE'
@@ -584,3 +586,4 @@ function logout() {
     
     showModeSelection();
 }
+
