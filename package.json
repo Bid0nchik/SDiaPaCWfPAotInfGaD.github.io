@@ -1,14 +1,14 @@
 {
-  "name": "blog-json-server",
+  "name": "blog-app",
   "version": "1.0.0",
-  "description": "JSON Server for blog API",
+  "description": "Blog application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "echo 'No build needed'"
   },
   "dependencies": {
-    "json-server": "^0.17.4",
-    "node-cron": "^3.0.2"
+    "json-server": "^0.17.4"
   },
   "engines": {
     "node": ">=14"
