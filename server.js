@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Используем порт из Render или 3001
+
+// ВАЖНО: Используем порт из Render или 3001 как fallback
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -148,8 +150,8 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Запуск сервера на правильном порту
-app.listen(PORT, '0.0.0.0', () => {
+// ЗАПУСК СЕРВЕРА - ВАЖНО: без указания хоста, только порт
+app.listen(PORT, () => {
     console.log('🚀 ==================================');
     console.log('✅ Blog API Server Started');
     console.log(`📍 Port: ${PORT}`);
