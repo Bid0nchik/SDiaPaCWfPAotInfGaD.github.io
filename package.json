@@ -1,12 +1,15 @@
- {
-   "description": "JSON Server for blog API",
+{
+  "name": "blog-github-storage",
+  "version": "1.0.0",
+  "description": "Blog with GitHub storage",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "json-server": "^0.17.4"
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-cron": "^3.0.2"
   },
   "engines": {
     "node": ">=14"
