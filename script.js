@@ -15,113 +15,42 @@ document.addEventListener('DOMContentLoaded', function() {
     showModeSelection();
     
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
+    
+    // Обработчики клавиш
+    document.addEventListener('keydown', handleKeyPress);
 });
+
+// Обработка нажатия клавиш
+function handleKeyPress(event) {
+    if (event.key === 'Escape') {
+        if (!document.getElementById('authModal').classList.contains('hidden')) {
+            return;
+        }
+        if (!document.getElementById('articleEditor').classList.contains('hidden')) {
+            cancelEditing();
+        } else if (!document.getElementById('articleView').classList.contains('hidden')) {
+            hideArticleView();
+        }
+    }
+}
 
 // Функция проверки пароля
 async function checkPassword() {
     const passwordInput = document.getElementById('passwordInput');
     const errorMessage = document.getElementById('errorMessage');
     const password = passwordInput.value.trim();
+    
+    if (!password) {
+        errorMessage.textContent = 'Введите пароль';
+        return;
+    }
+    
     if (password === ADMIN_PASSWORD) {
         currentMode = 'admin';
         hideAuthModal();
         showAdminFeatures();
         errorMessage.textContent = '';
-    } else {
-        errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
         passwordInput.value = '';
-        passwordInput.focus();
-    }
-}
-
-// Вход как гость
-function enterAsGuest() {
-    currentMode = 'guest';
-    hideAuthModal();
-    showGuestFeatures();
-}
-// Загрузка статей с сервера
-async function loadArticlesFromServer() {
-    try {
-        console.log('Загружаем статьи с сервера...');
-        const response = await fetch(`${API_URL}/articles`);
-        
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-        
-        articles = await response.json();
-        console.log('Статьи загружены:', articles.length);
-        renderArticles();
-        
-    } catch (error) {
-        console.error('Ошибка загрузки:', error);
-        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
-        renderArticles();
-    }
-}
-// Сохранение статьи на сервер
-async function saveArticleToServer(article) {
-    const response = await fetch(`${API_URL}/articles`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(article)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Обновление статьи на сервере
-async function updateArticleOnServer(articleId, articleData) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Удаление статьи с сервера
-async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'DELETE'
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-}
-
-// Показать выбор режима
-function showModeSelection() {
-    document.getElementById('authModal').classList.remove('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-}
-
-// Проверка пароля администратора
-function checkPassword() {
-    const passwordInput = document.getElementById('passwordInput');
-    const errorMessage = document.getElementById('errorMessage');
-    const password = passwordInput.value.trim();
-
-    if (password === ADMIN_PASSWORD) {
-        currentMode = 'admin';
-        hideAuthModal();
-        showAdminFeatures();
-        errorMessage.textContent = '';
     } else {
         errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
         passwordInput.value = '';
@@ -167,6 +96,91 @@ function showGuestFeatures() {
     document.getElementById('articlesList').classList.remove('hidden');
 }
 
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('Загружаем статьи с сервера...');
+        showLoading(true);
+        
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('Статьи загружены:', articles.length);
+        renderArticles();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки:', error);
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Показать/скрыть загрузку
+function showLoading(show) {
+    const container = document.getElementById('articlesContainer');
+    if (show) {
+        container.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка статей...</p>
+            </div>
+        `;
+    }
+}
+
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    const response = await fetch(`${API_URL}/articles`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Обновление статьи на сервере
+async function updateArticleOnServer(articleId, articleData) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+}
+
 // Переход на главную страницу
 function goToHome() {
     document.getElementById('articleEditor').classList.add('hidden');
@@ -177,6 +191,9 @@ function goToHome() {
 // Выход из системы
 function logout() {
     currentMode = null;
+    currentEditingArticleId = null;
+    currentImage = null;
+    
     document.getElementById('themeToggle').classList.add('hidden');
     document.getElementById('homeBtn').classList.add('hidden');
     document.getElementById('newArticleBtn').classList.add('hidden');
@@ -213,12 +230,12 @@ function renderArticles() {
     container.innerHTML = sortedArticles.map(article => `
         <div class="article-card" onclick="viewArticle('${article.id}')">
             ${article.image ? `
-                <img src="${article.image}" alt="${article.title}" class="article-card-image">
+                <img src="${article.image}" alt="${article.title}" class="article-card-image" loading="lazy">
             ` : `
-                <div class="article-card-placeholder">Статья</div>
+                <div class="article-card-placeholder">📝</div>
             `}
             <div class="article-card-content">
-                <h3 class="article-card-title">${article.title}</h3>
+                <h3 class="article-card-title">${escapeHtml(article.title)}</h3>
                 <p class="article-card-preview">${getPreview(article.content)}</p>
                 <p class="article-card-date">${formatDate(article.date)}</p>
             </div>
@@ -226,12 +243,20 @@ function renderArticles() {
     `).join('');
 }
 
+// Экранирование HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Получение превью текста
 function getPreview(text, maxLength = 150) {
     if (!text) return 'Нет содержания';
     const cleanText = text.replace(/<br>/g, ' ').replace(/<[^>]*>/g, '');
-    if (cleanText.length <= maxLength) return cleanText;
-    return cleanText.substring(0, maxLength) + '...';
+    const escapedText = escapeHtml(cleanText);
+    if (escapedText.length <= maxLength) return escapedText;
+    return escapedText.substring(0, maxLength) + '...';
 }
 
 // Форматирование даты
@@ -257,11 +282,29 @@ function handleImageUpload(event) {
     const removeBtn = document.getElementById('removeImageBtn');
     
     if (file) {
+        // Проверка типа файла
+        if (!file.type.startsWith('image/')) {
+            alert('Пожалуйста, выберите файл изображения');
+            event.target.value = '';
+            return;
+        }
+        
+        // Проверка размера файла (макс 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Размер изображения не должен превышать 5MB');
+            event.target.value = '';
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             currentImage = e.target.result;
             preview.innerHTML = `<img src="${currentImage}" alt="Предпросмотр">`;
             removeBtn.classList.remove('hidden');
+        };
+        reader.onerror = function() {
+            alert('Ошибка при загрузке изображения');
+            event.target.value = '';
         };
         reader.readAsDataURL(file);
     } else {
@@ -305,6 +348,7 @@ function showEditor() {
     
     document.getElementById('editorTitle').textContent = 'Новая статья';
     document.getElementById('saveButton').textContent = 'Опубликовать';
+    document.getElementById('saveButton').disabled = false;
     
     document.getElementById('articleTitle').focus();
 }
@@ -345,6 +389,7 @@ function editArticle(articleId) {
 
     document.getElementById('editorTitle').textContent = 'Редактирование статьи';
     document.getElementById('saveButton').textContent = 'Сохранить изменения';
+    document.getElementById('saveButton').disabled = false;
 
     document.getElementById('articleTitle').focus();
 }
@@ -369,21 +414,31 @@ function hideEditor() {
 
 // Сохранение статьи
 async function saveArticle() {
-    const title = document.getElementById('articleTitle').value.trim();
-    const content = document.getElementById('articleContent').value.trim();
+    const titleInput = document.getElementById('articleTitle');
+    const contentInput = document.getElementById('articleContent');
+    const saveButton = document.getElementById('saveButton');
+    
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
 
     if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
-        document.getElementById('articleTitle').focus();
+        titleInput.focus();
         return;
     }
     if (!content) {
         alert('Пожалуйста, введите содержание статьи');
-        document.getElementById('articleContent').focus();
+        contentInput.focus();
         return;
     }
 
+    // Блокируем кнопку на время сохранения
+    saveButton.disabled = true;
+    saveButton.textContent = 'Сохранение...';
+
     try {
+        let savedArticle;
+        
         if (currentEditingArticleId) {
             const articleData = {
                 title: title,
@@ -392,19 +447,18 @@ async function saveArticle() {
                 date: new Date().toISOString()
             };
 
-            await updateArticleOnServer(currentEditingArticleId, articleData);
-            console.log('Статья обновлена');
+            savedArticle = await updateArticleOnServer(currentEditingArticleId, articleData);
+            console.log('Статья обновлена:', savedArticle.id);
         } else {
             const newArticle = {
-                id: generateId(),
                 title: title,
                 content: content,
                 image: currentImage,
                 date: new Date().toISOString()
             };
 
-            await saveArticleToServer(newArticle);
-            console.log('Статья создана');
+            savedArticle = await saveArticleToServer(newArticle);
+            console.log('Статья создана:', savedArticle.id);
         }
 
         await loadArticlesFromServer();
@@ -412,14 +466,12 @@ async function saveArticle() {
         goToHome();
         
     } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Не удалось сохранить статью. Проверьте подключение к серверу.');
+        console.error('Ошибка сохранения:', error);
+        alert(`Не удалось сохранить статью: ${error.message}`);
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = currentEditingArticleId ? 'Сохранить изменения' : 'Опубликовать';
     }
-}
-
-// Генерация ID
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
 // Просмотр статьи
@@ -440,8 +492,8 @@ function viewArticle(articleId) {
         <div class="article-meta">
             <p>Опубликовано: ${formatDate(article.date)}</p>
         </div>
-        <h1>${article.title}</h1>
-        ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
+        <h1>${escapeHtml(article.title)}</h1>
+        ${article.image ? `<img src="${article.image}" alt="${escapeHtml(article.title)}" class="article-image" loading="lazy">` : ''}
         <div class="article-text">${article.content.replace(/\n/g, '<br>')}</div>
     `;
     
@@ -449,10 +501,10 @@ function viewArticle(articleId) {
         articleHTML += `
             <div class="article-admin-actions">
                 <button class="btn btn-primary" onclick="editArticle('${article.id}')">
-                    Редактировать статью
+                    ✏️ Редактировать статью
                 </button>
                 <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                    Удалить статью
+                    🗑️ Удалить статью
                 </button>
             </div>
         `;
@@ -469,14 +521,17 @@ function hideArticleView() {
 
 // Удаление статьи
 async function deleteArticle(articleId) {
-    if (confirm('Вы уверены, что хотите удалить эту статью?')) {
-        try {
-            await deleteArticleFromServer(articleId);
-            await loadArticlesFromServer();
-            hideArticleView();
-        } catch (error) {
-            alert('Не удалось удалить статью. Проверьте подключение к серверу.');
-        }
+    if (!confirm('Вы уверены, что хотите удалить эту статью? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    try {
+        await deleteArticleFromServer(articleId);
+        await loadArticlesFromServer();
+        hideArticleView();
+    } catch (error) {
+        console.error('Ошибка удаления:', error);
+        alert(`Не удалось удалить статью: ${error.message}`);
     }
 }
 
@@ -504,7 +559,8 @@ function toggleTheme() {
 function updateThemeButton() {
     const themeButton = document.getElementById('themeToggle');
     if (themeButton) {
-        themeButton.textContent = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
+        themeButton.textContent = currentTheme === 'light' ? '🌙 Темная тема' : '☀️ Светлая тема';
+        themeButton.title = currentTheme === 'light' ? 'Переключить на темную тему' : 'Переключить на светлую тему';
     }
 }
 
@@ -513,16 +569,19 @@ function showError(message) {
     const container = document.getElementById('articlesContainer');
     if (container) {
         container.innerHTML = `
-            <div class="no-articles">
+            <div class="no-articles error">
                 <h3>Ошибка загрузки</h3>
-                <p>${message}</p>
+                <p>${escapeHtml(message)}</p>
                 <button class="btn btn-primary" onclick="loadArticlesFromServer()">
-                    Повторить попытку
+                    🔄 Повторить попытку
                 </button>
             </div>
         `;
     }
 }
 
-
-
+// Показать выбор режима
+function showModeSelection() {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.getElementById('articlesList').classList.add('hidden');
+}
