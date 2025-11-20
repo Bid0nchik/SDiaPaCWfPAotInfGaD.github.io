@@ -111,23 +111,6 @@ function showModeSelection() {
     document.getElementById('articlesList').classList.add('hidden');
 }
 
-// Проверка пароля администратора
-function checkPassword() {
-    const passwordInput = document.getElementById('passwordInput');
-    const errorMessage = document.getElementById('errorMessage');
-    const password = passwordInput.value.trim();
-
-    if (password === ADMIN_PASSWORD) {
-        currentMode = 'admin';
-        hideAuthModal();
-        showAdminFeatures();
-        errorMessage.textContent = '';
-    } else {
-        errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
-        passwordInput.value = '';
-        passwordInput.focus();
-    }
-}
 
 // Вход как гость
 function enterAsGuest() {
@@ -523,6 +506,7 @@ function showError(message) {
         `;
     }
 }
+
 
 
 
