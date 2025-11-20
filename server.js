@@ -8,8 +8,8 @@ const PORT = process.env.PORT || 3001;
 
 // Настройка лимита запросов
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
-    max: 100, // максимум 100 запросов с одного IP
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: {
         error: 'Слишком много запросов, попробуйте позже'
     }
@@ -22,11 +22,11 @@ app.use(express.json({ limit: '10mb' }));
 // Валидация переменных окружения
 const requiredEnvVars = [
     'FIREBASE_PROJECT_ID',
-    'FIREBASE_PRIVATE_KEY_ID', 
+    'FIREBASE_PRIVATE_KEY_ID',
     'FIREBASE_PRIVATE_KEY',
     'FIREBASE_CLIENT_EMAIL',
     'FIREBASE_CLIENT_ID',
-    'FIREBASE_CLIENT_CERT_URL'
+    'FIREBASE_CLIENT_CERT_URL',
     'ADMIN_PASSWORD'
 ];
 
@@ -36,6 +36,8 @@ for (const envVar of requiredEnvVars) {
         process.exit(1);
     }
 }
+
+console.log('✅ Все переменные окружения загружены');
 
 // Firebase Admin инициализация
 const serviceAccount = {
@@ -63,6 +65,38 @@ try {
 
 const db = admin.firestore();
 
+// 🔐 ЭНДПОИНТ ДЛЯ ПРОВЕРКИ ПАРОЛЯ
+app.post('/auth/check-password', async (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        if (!password) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Пароль обязателен' 
+            });
+        }
+        
+        if (password === process.env.ADMIN_PASSWORD) {
+            res.json({ 
+                success: true,
+                message: 'Авторизация успешна'
+            });
+        } else {
+            res.status(401).json({ 
+                success: false, 
+                error: 'Неверный пароль' 
+            });
+        }
+    } catch (error) {
+        console.error('❌ Ошибка проверки пароля:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка сервера' 
+        });
+    }
+});
+
 // Валидация данных статьи
 function validateArticleData(articleData, isUpdate = false) {
     const errors = [];
@@ -88,7 +122,7 @@ function validateArticleData(articleData, isUpdate = false) {
     if (articleData.image !== undefined && articleData.image !== null) {
         if (!articleData.image.startsWith('data:image/')) {
             errors.push('Неверный формат изображения');
-        } else if (articleData.image.length > 5 * 1024 * 1024) { // ~5MB
+        } else if (articleData.image.length > 5 * 1024 * 1024) {
             errors.push('Размер изображения слишком большой');
         }
     }
@@ -148,7 +182,6 @@ app.post('/articles', async (req, res) => {
     try {
         const { title, content, image } = req.body;
 
-        // Валидация
         const validationErrors = validateArticleData({ title, content, image });
         if (validationErrors.length > 0) {
             return res.status(400).json({ 
@@ -188,13 +221,11 @@ app.patch('/articles/:id', async (req, res) => {
     try {
         const { title, content, image } = req.body;
         
-        // Проверяем существование статьи
         const doc = await db.collection('articles').doc(req.params.id).get();
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
 
-        // Валидация
         const validationErrors = validateArticleData({ title, content, image }, true);
         if (validationErrors.length > 0) {
             return res.status(400).json({ 
@@ -213,7 +244,6 @@ app.patch('/articles/:id', async (req, res) => {
 
         await db.collection('articles').doc(req.params.id).update(updateData);
         
-        // Получаем обновленную статью
         const updatedDoc = await db.collection('articles').doc(req.params.id).get();
         const updatedArticle = {
             id: updatedDoc.id,
@@ -234,7 +264,6 @@ app.patch('/articles/:id', async (req, res) => {
 // DELETE /articles/:id - удалить статью
 app.delete('/articles/:id', async (req, res) => {
     try {
-        // Проверяем существование статьи
         const doc = await db.collection('articles').doc(req.params.id).get();
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
@@ -284,6 +313,7 @@ app.use('*', (req, res) => {
             'POST /articles',
             'PATCH /articles/:id',
             'DELETE /articles/:id',
+            'POST /auth/check-password',
             'GET /health'
         ]
     });
@@ -302,6 +332,7 @@ app.listen(PORT, () => {
     console.log('🚀 ==================================');
     console.log('✅ Blog API with Firebase Firestore');
     console.log(`📍 Port: ${PORT}`);
+    console.log(`🔐 Admin auth: enabled`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🗄️  Database: Firebase Firestore`);
     console.log(`🔒 Rate limiting: enabled`);
