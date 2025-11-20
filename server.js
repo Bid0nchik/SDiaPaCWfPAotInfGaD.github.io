@@ -65,10 +65,15 @@ try {
 
 const db = admin.firestore();
 
-// 🔐 ЭНДПОИНТ ДЛЯ ПРОВЕРКИ ПАРОЛЯ
+// 🔐 ЭНДПОИНТ ДЛЯ ПРОВЕРКИ ПАРОЛЯ (С ОТЛАДКОЙ)
 app.post('/auth/check-password', async (req, res) => {
     try {
         const { password } = req.body;
+        
+        console.log('🔐 Получен запрос на проверку пароля');
+        console.log('📧 Введенный пароль:', password);
+        console.log('🔑 Ожидаемый пароль:', process.env.ADMIN_PASSWORD);
+        console.log('✅ Совпадение:', password === process.env.ADMIN_PASSWORD);
         
         if (!password) {
             return res.status(400).json({ 
@@ -78,11 +83,13 @@ app.post('/auth/check-password', async (req, res) => {
         }
         
         if (password === process.env.ADMIN_PASSWORD) {
+            console.log('✅ Авторизация успешна');
             res.json({ 
                 success: true,
                 message: 'Авторизация успешна'
             });
         } else {
+            console.log('❌ Неверный пароль');
             res.status(401).json({ 
                 success: false, 
                 error: 'Неверный пароль' 
