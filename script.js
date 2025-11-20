@@ -13,6 +13,19 @@ const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Инициализация приложения...');
+    
+    // Обработчики для кнопок входа
+    const guestLoginBtn = document.getElementById('guestLoginBtn');
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    
+    if (guestLoginBtn) {
+        guestLoginBtn.addEventListener('click', enterAsGuest);
+    }
+    
+    if (adminLoginBtn) {
+        adminLoginBtn.addEventListener('click', checkPassword);
+    }
+    
     loadTheme();
     loadArticlesFromServer();
     showModeSelection();
@@ -504,27 +517,3 @@ function showError(message) {
         `;
     }
 }
-// Добавь в самый конец script.js - после всех функций
-
-// Инициализация обработчиков событий после загрузки DOM
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработчики для кнопок входа
-    const guestLoginBtn = document.getElementById('guestLoginBtn');
-    const adminLoginBtn = document.getElementById('adminLoginBtn');
-    
-    if (guestLoginBtn) {
-        guestLoginBtn.addEventListener('click', enterAsGuest);
-    }
-    
-    if (adminLoginBtn) {
-        adminLoginBtn.addEventListener('click', checkPassword);
-    }
-    
-    // Остальная инициализация...
-    console.log('Инициализация приложения...');
-    loadTheme();
-    loadArticlesFromServer();
-    showModeSelection();
-    
-    document.getElementById('articleImage').addEventListener('change', handleImageUpload);
-});
