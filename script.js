@@ -1,11 +1,14 @@
-const ADMIN_PASSWORD = 1111;
+// Конфигурация приложения
+const CONFIG = {
+    ADMIN_PASSWORD: '1111',
+    API_URL: 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com'
+};
+
 let articles = [];
 let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
 let currentTheme = 'dark';
-
-const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,7 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
     loadArticlesFromServer();
     showModeSelection();
     
+    // Обработчики событий
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
+    document.getElementById('adminLoginBtn').addEventListener('click', checkPassword);
+    document.getElementById('guestLoginBtn').addEventListener('click', enterAsGuest);
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkPassword();
+    });
     
     // Обработчики клавиш
     document.addEventListener('keydown', handleKeyPress);
@@ -35,7 +44,7 @@ function handleKeyPress(event) {
 }
 
 // Функция проверки пароля
-async function checkPassword() {
+function checkPassword() {
     const passwordInput = document.getElementById('passwordInput');
     const errorMessage = document.getElementById('errorMessage');
     const password = passwordInput.value.trim();
@@ -45,7 +54,7 @@ async function checkPassword() {
         return;
     }
     
-    if (password === ADMIN_PASSWORD) {
+    if (password === CONFIG.ADMIN_PASSWORD) {
         currentMode = 'admin';
         hideAuthModal();
         showAdminFeatures();
@@ -96,13 +105,21 @@ function showGuestFeatures() {
     document.getElementById('articlesList').classList.remove('hidden');
 }
 
+// Показать выбор режима
+function showModeSelection() {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.getElementById('articlesList').classList.add('hidden');
+    document.getElementById('articleEditor').classList.add('hidden');
+    document.getElementById('articleView').classList.add('hidden');
+}
+
 // Загрузка статей с сервера
 async function loadArticlesFromServer() {
     try {
         console.log('Загружаем статьи с сервера...');
         showLoading(true);
         
-        const response = await fetch(`${API_URL}/articles`);
+        const response = await fetch(`${CONFIG.API_URL}/articles`);
         
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -135,7 +152,7 @@ function showLoading(show) {
 
 // Сохранение статьи на сервер
 async function saveArticleToServer(article) {
-    const response = await fetch(`${API_URL}/articles`, {
+    const response = await fetch(`${CONFIG.API_URL}/articles`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -153,7 +170,7 @@ async function saveArticleToServer(article) {
 
 // Обновление статьи на сервере
 async function updateArticleOnServer(articleId, articleData) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+    const response = await fetch(`${CONFIG.API_URL}/articles/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -171,7 +188,7 @@ async function updateArticleOnServer(articleId, articleData) {
 
 // Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+    const response = await fetch(`${CONFIG.API_URL}/articles/${articleId}`, {
         method: 'DELETE'
     });
 
@@ -579,10 +596,3 @@ function showError(message) {
         `;
     }
 }
-
-// Показать выбор режима
-function showModeSelection() {
-    document.getElementById('authModal').classList.remove('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-}
-
