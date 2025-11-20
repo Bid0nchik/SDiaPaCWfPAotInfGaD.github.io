@@ -14,8 +14,8 @@
             <p>Введите пароль администратора для полного доступа или войдите как гость для чтения</p>
             <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
-                <button onclick="checkPassword()" class="btn btn-primary">Войти как администратор</button>
-                <button onclick="enterAsGuest()" class="btn btn-secondary">Войти как гость</button>
+                <button id="adminLoginBtn" class="btn btn-primary">Войти как администратор</button>
+               <button id="guestLoginBtn" class="btn btn-secondary">Войти как гость</button>
             </div>
             <p id="errorMessage" class="error-message"></p>
         </div>
@@ -112,3 +112,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
