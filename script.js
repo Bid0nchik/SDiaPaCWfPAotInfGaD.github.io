@@ -1,4 +1,4 @@
-//const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD = 1111;
 let articles = [];
 let currentImage = null;
 let currentMode = null;
