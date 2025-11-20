@@ -265,7 +265,7 @@ function renderArticles() {
             ${article.image ? `
                 <img src="${article.image}" alt="${article.title}" class="article-card-image" loading="lazy">
             ` : `
-                <div class="article-card-placeholder">📝</div>
+                <div class="article-card-placeholder">Статья</div>
             `}
             <div class="article-card-content">
                 <h3 class="article-card-title">${escapeHtml(article.title)}</h3>
@@ -531,10 +531,10 @@ function viewArticle(articleId) {
         articleHTML += `
             <div class="article-admin-actions">
                 <button class="btn btn-primary" onclick="editArticle('${article.id}')">
-                    ✏️ Редактировать статью
+                    Редактировать статью
                 </button>
                 <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
-                    🗑️ Удалить статью
+                    Удалить статью
                 </button>
             </div>
         `;
@@ -589,7 +589,7 @@ function toggleTheme() {
 function updateThemeButton() {
     const themeButton = document.getElementById('themeToggle');
     if (themeButton) {
-        themeButton.textContent = currentTheme === 'light' ? '🌙 Темная тема' : '☀️ Светлая тема';
+        themeButton.textContent = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
         themeButton.title = currentTheme === 'light' ? 'Переключить на темную тему' : 'Переключить на светлую тему';
     }
 }
@@ -603,9 +603,10 @@ function showError(message) {
                 <h3>Ошибка загрузки</h3>
                 <p>${escapeHtml(message)}</p>
                 <button class="btn btn-primary" onclick="loadArticlesFromServer()">
-                    🔄 Повторить попытку
+                    Повторить попытку
                 </button>
             </div>
         `;
     }
 }
+
