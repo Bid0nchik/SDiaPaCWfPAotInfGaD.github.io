@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+//const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 let articles = [];
 let currentImage = null;
 let currentMode = null;
@@ -585,3 +585,4 @@ function showModeSelection() {
     document.getElementById('authModal').classList.remove('hidden');
     document.getElementById('articlesList').classList.add('hidden');
 }
+
