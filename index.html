@@ -15,7 +15,7 @@
             <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
                 <button id="adminLoginBtn" class="btn btn-primary">Войти как администратор</button>
-               <button id="guestLoginBtn" class="btn btn-secondary">Войти как гость</button>
+                <button id="guestLoginBtn" class="btn btn-secondary">Войти как гость</button>
             </div>
             <p id="errorMessage" class="error-message"></p>
         </div>
@@ -25,22 +25,21 @@
     <header class="header">
         <div class="container">
             <h1>Статьер</h1>
-            <!-- В блоке header-actions добавьте кнопку темы -->
-<div class="header-actions">
-    <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
-        Главная
-    </button>
-    <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
-        Новая статья
-    </button>
-    <button id="themeToggle" class="btn btn-secondary hidden" onclick="toggleTheme()">
-        Тёмная тема
-    </button>
-    <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
-        Выйти
-    </button>
-    <span id="userStatus" class="user-status hidden"></span>
-</div>
+            <div class="header-actions">
+                <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
+                    Главная
+                </button>
+                <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
+                    Новая статья
+                </button>
+                <button id="themeToggle" class="btn btn-secondary hidden" onclick="toggleTheme()">
+                    Тёмная тема
+                </button>
+                <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
+                    Выйти
+                </button>
+                <span id="userStatus" class="user-status hidden"></span>
+            </div>
         </div>
     </header>
 
@@ -112,4 +111,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
