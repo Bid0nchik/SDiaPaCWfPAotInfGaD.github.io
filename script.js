@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = '1111';
+const ADMIN_PASSWORD = '6-XNRgA6b6nFP4!)k%UDgpnqF*$~xi';
 
 // URL JSON Server
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
@@ -504,4 +504,5 @@ function showError(message) {
         `;
     }
 }
+
 
