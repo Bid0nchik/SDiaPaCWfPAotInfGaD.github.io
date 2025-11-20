@@ -1,5 +1,4 @@
-// Глобальные переменные
-let articles = [];
+
 let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
@@ -517,3 +516,4 @@ function showError(message) {
         `;
     }
 }
+
