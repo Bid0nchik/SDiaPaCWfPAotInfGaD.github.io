@@ -855,7 +855,7 @@ body {
     }
 }
 [data-theme="light"] body {
-    background-image: url('images/background_pc_ligth.jpg');
+    background-image: url('./images/background_pc_ligth.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -874,7 +874,7 @@ body {
 }
 
 [data-theme="dark"] body {
-    background-image: url('images/background_pc_dark.jpg');
+    background-image: url('./images/background_pc_dark.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -894,10 +894,11 @@ body {
 
 @media (max-width: 900px) {
     [data-theme="light"] body {
-        background-image: url('images/background_mobile_ligth.jpg');
+        background-image: url('./images/background_mobile_ligth.jpg');
     }
     
     [data-theme="dark"] body {
-        background-image: url('images/background_mobile_dark.jpg');
+        background-image: url('./images/background_mobile_dark.jpg');
     }
 }
+
