@@ -69,19 +69,12 @@ const db = admin.firestore();
 app.post('/auth/check-password', async (req, res) => {
     try {
         const { password } = req.body;
-        
-        console.log('🔐 Получен запрос на проверку пароля');
-        console.log('📧 Введенный пароль:', password);
-        console.log('🔑 Ожидаемый пароль:', process.env.ADMIN_PASSWORD);
-        console.log('✅ Совпадение:', password === process.env.ADMIN_PASSWORD);
-        
         if (!password) {
             return res.status(400).json({ 
                 success: false, 
                 error: 'Пароль обязателен' 
             });
         }
-        
         if (password === process.env.ADMIN_PASSWORD) {
             console.log('✅ Авторизация успешна');
             res.json({ 
