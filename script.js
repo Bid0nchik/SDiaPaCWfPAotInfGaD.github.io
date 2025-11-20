@@ -1,6 +1,6 @@
 // Конфигурация приложения
 const CONFIG = {
-    ADMIN_PASSWORD: '1111',
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     API_URL: 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com'
 };
 
@@ -596,3 +596,4 @@ function showError(message) {
         `;
     }
 }
+
