@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD = '1111';
 
 // URL JSON Server
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
