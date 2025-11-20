@@ -1,14 +1,11 @@
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
-// URL JSON Server
-const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
-
-// Глобальные переменные
 let articles = [];
 let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
 let currentTheme = 'dark';
+
+const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,6 +17,29 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
 });
 
+// Функция проверки пароля
+async function checkPassword() {
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const password = passwordInput.value.trim();
+    if (password === ADMIN_PASSWORD) {
+        currentMode = 'admin';
+        hideAuthModal();
+        showAdminFeatures();
+        errorMessage.textContent = '';
+    } else {
+        errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
+}
+
+// Вход как гость
+function enterAsGuest() {
+    currentMode = 'guest';
+    hideAuthModal();
+    showGuestFeatures();
+}
 // Загрузка статей с сервера
 async function loadArticlesFromServer() {
     try {
@@ -40,7 +60,6 @@ async function loadArticlesFromServer() {
         renderArticles();
     }
 }
-
 // Сохранение статьи на сервер
 async function saveArticleToServer(article) {
     const response = await fetch(`${API_URL}/articles`, {
@@ -504,6 +523,7 @@ function showError(message) {
         `;
     }
 }
+
 
 
 
