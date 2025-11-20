@@ -1,30 +1,15 @@
-
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+let articles = [];
 let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
 let currentTheme = 'dark';
-
-// Временный пароль для тестирования
-const ADMIN_PASSWORD = 'admin123';
 
 const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Инициализация приложения...');
-    
-    // Обработчики для кнопок входа
-    const guestLoginBtn = document.getElementById('guestLoginBtn');
-    const adminLoginBtn = document.getElementById('adminLoginBtn');
-    
-    if (guestLoginBtn) {
-        guestLoginBtn.addEventListener('click', enterAsGuest);
-    }
-    
-    if (adminLoginBtn) {
-        adminLoginBtn.addEventListener('click', checkPassword);
-    }
-    
     loadTheme();
     loadArticlesFromServer();
     showModeSelection();
@@ -33,6 +18,100 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Функция проверки пароля
+async function checkPassword() {
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const password = passwordInput.value.trim();
+    if (password === ADMIN_PASSWORD) {
+        currentMode = 'admin';
+        hideAuthModal();
+        showAdminFeatures();
+        errorMessage.textContent = '';
+    } else {
+        errorMessage.textContent = 'Неверный пароль! Попробуйте снова.';
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
+}
+
+// Вход как гость
+function enterAsGuest() {
+    currentMode = 'guest';
+    hideAuthModal();
+    showGuestFeatures();
+}
+// Загрузка статей с сервера
+async function loadArticlesFromServer() {
+    try {
+        console.log('Загружаем статьи с сервера...');
+        const response = await fetch(`${API_URL}/articles`);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        articles = await response.json();
+        console.log('Статьи загружены:', articles.length);
+        renderArticles();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки:', error);
+        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
+        renderArticles();
+    }
+}
+// Сохранение статьи на сервер
+async function saveArticleToServer(article) {
+    const response = await fetch(`${API_URL}/articles`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Обновление статьи на сервере
+async function updateArticleOnServer(articleId, articleData) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Удаление статьи с сервера
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+    }
+}
+
+// Показать выбор режима
+function showModeSelection() {
+    document.getElementById('authModal').classList.remove('hidden');
+    document.getElementById('articlesList').classList.add('hidden');
+}
+
+// Проверка пароля администратора
 function checkPassword() {
     const passwordInput = document.getElementById('passwordInput');
     const errorMessage = document.getElementById('errorMessage');
@@ -108,33 +187,6 @@ function logout() {
     document.getElementById('articleView').classList.add('hidden');
     
     showModeSelection();
-}
-
-// Показать выбор режима
-function showModeSelection() {
-    document.getElementById('authModal').classList.remove('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-}
-
-// Загрузка статей с сервера
-async function loadArticlesFromServer() {
-    try {
-        console.log('Загружаем статьи с сервера...');
-        const response = await fetch(`${API_URL}/articles`);
-        
-        if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-        
-        articles = await response.json();
-        console.log('Статьи загружены:', articles.length);
-        renderArticles();
-        
-    } catch (error) {
-        console.error('Ошибка загрузки:', error);
-        showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
-        renderArticles();
-    }
 }
 
 // Отображение списка статей
@@ -365,51 +417,6 @@ async function saveArticle() {
     }
 }
 
-// Сохранение статьи на сервер
-async function saveArticleToServer(article) {
-    const response = await fetch(`${API_URL}/articles`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(article)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Обновление статьи на сервере
-async function updateArticleOnServer(articleId, articleData) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData)
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-// Удаление статьи с сервера
-async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
-        method: 'DELETE'
-    });
-
-    if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-    }
-}
-
 // Генерация ID
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -516,4 +523,6 @@ function showError(message) {
         `;
     }
 }
+
+
 
