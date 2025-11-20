@@ -27,6 +27,7 @@ const requiredEnvVars = [
     'FIREBASE_CLIENT_EMAIL',
     'FIREBASE_CLIENT_ID',
     'FIREBASE_CLIENT_CERT_URL'
+    'ADMIN_PASSWORD'
 ];
 
 for (const envVar of requiredEnvVars) {
