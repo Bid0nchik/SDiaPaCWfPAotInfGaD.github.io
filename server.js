@@ -5,13 +5,12 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+app.options('*', cors());
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true
 }));
-
-app.options('*', cors());
 app.use((req, res, next) => {
     // Кэшируем GET запросы на 30 секунд
     if (req.method === 'GET') {
