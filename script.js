@@ -43,7 +43,7 @@ function handleKeyPress(event) {
 
 // ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
 async function checkPassword() {
-    const password = pdocument.getElementById('passwordInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
     const errorMessage = document.getElementById('errorMessage');
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
@@ -547,3 +547,4 @@ function updateThemeButton() {
         themeButton.textContent = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
     }
 }
+
