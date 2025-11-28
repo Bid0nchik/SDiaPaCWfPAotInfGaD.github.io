@@ -5,7 +5,13 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
+app.use((req, res, next) => {
+    // Кэшируем GET запросы на 30 секунд
+    if (req.method === 'GET') {
+        res.set('Cache-Control', 'public, max-age=30');
+    }
+    next();
+});
 // Настройка лимита запросов
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -37,8 +43,6 @@ for (const envVar of requiredEnvVars) {
     }
 }
 
-console.log('✅ Все переменные окружения загружены');
-
 // Firebase Admin инициализация
 const serviceAccount = {
     type: "service_account",
@@ -57,15 +61,12 @@ try {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
     });
-    console.log('✅ Firebase Admin инициализирован');
 } catch (error) {
-    console.error('❌ Ошибка инициализации Firebase:', error);
     process.exit(1);
 }
 
 const db = admin.firestore();
 
-// 🔐 ЭНДПОИНТ ДЛЯ ПРОВЕРКИ ПАРОЛЯ (С ОТЛАДКОЙ)
 app.post('/auth/check-password', async (req, res) => {
     try {
         const { password } = req.body;
@@ -76,20 +77,17 @@ app.post('/auth/check-password', async (req, res) => {
             });
         }
         if (password === process.env.ADMIN_PASSWORD) {
-            console.log('✅ Авторизация успешна');
             res.json({ 
                 success: true,
                 message: 'Авторизация успешна'
             });
         } else {
-            console.log('❌ Неверный пароль');
             res.status(401).json({ 
                 success: false, 
                 error: 'Неверный пароль' 
             });
         }
     } catch (error) {
-        console.error('❌ Ошибка проверки пароля:', error);
         res.status(500).json({ 
             success: false, 
             error: 'Ошибка сервера' 
@@ -141,11 +139,8 @@ app.get('/articles', async (req, res) => {
             id: doc.id,
             ...doc.data()
         }));
-        
-        console.log(`✅ Загружено ${articles.length} статей`);
         res.json(articles);
     } catch (error) {
-        console.error('❌ Ошибка получения статей:', error);
         res.status(500).json({ 
             error: 'Не удалось загрузить статьи',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -169,7 +164,6 @@ app.get('/articles/:id', async (req, res) => {
         
         res.json(article);
     } catch (error) {
-        console.error('❌ Ошибка получения статьи:', error);
         res.status(500).json({ 
             error: 'Не удалось загрузить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -204,11 +198,8 @@ app.post('/articles', async (req, res) => {
             id: docRef.id,
             ...articleData
         };
-
-        console.log('✅ Статья создана:', docRef.id);
         res.status(201).json(responseArticle);
     } catch (error) {
-        console.error('❌ Ошибка создания статьи:', error);
         res.status(500).json({ 
             error: 'Не удалось создать статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -249,11 +240,8 @@ app.patch('/articles/:id', async (req, res) => {
             id: updatedDoc.id,
             ...updatedDoc.data()
         };
-
-        console.log('✅ Статья обновлена:', req.params.id);
         res.json(updatedArticle);
     } catch (error) {
-        console.error('❌ Ошибка обновления статьи:', error);
         res.status(500).json({ 
             error: 'Не удалось обновить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -270,10 +258,8 @@ app.delete('/articles/:id', async (req, res) => {
         }
 
         await db.collection('articles').doc(req.params.id).delete();
-        console.log('✅ Статья удалена:', req.params.id);
         res.status(204).send();
     } catch (error) {
-        console.error('❌ Ошибка удаления статьи:', error);
         res.status(500).json({ 
             error: 'Не удалось удалить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -295,7 +281,6 @@ app.get('/health', async (req, res) => {
             environment: process.env.NODE_ENV || 'development'
         });
     } catch (error) {
-        console.error('❌ Health check failed:', error);
         res.status(500).json({ 
             error: 'Database connection failed',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -321,7 +306,6 @@ app.use('*', (req, res) => {
 
 // Обработка ошибок
 app.use((error, req, res, next) => {
-    console.error('❌ Необработанная ошибка:', error);
     res.status(500).json({ 
         error: 'Внутренняя ошибка сервера',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -329,14 +313,7 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log('🚀 ==================================');
-    console.log('✅ Blog API with Firebase Firestore');
     console.log(`📍 Port: ${PORT}`);
-    console.log(`🔐 Admin auth: enabled`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🗄️  Database: Firebase Firestore`);
-    console.log(`🔒 Rate limiting: enabled`);
-    console.log('🚀 ==================================');
 });
-
 module.exports = app;
