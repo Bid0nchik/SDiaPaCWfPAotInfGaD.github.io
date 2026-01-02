@@ -58,15 +58,7 @@ async function checkPassword() {
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
         return;
-    }else{//тут убрать else
-        currentMode = 'admin';
-            showAllFunctions();
-            hideWindowАuthorization();
-            showAdminFunctions();
-            errorMessage.textContent = '';
-            passwordInput.value = '';
     }
-    /* Обработка ошибок с сервером
     try {
         const response = await fetch(`${CONFIG.API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
             method: 'POST',
@@ -92,7 +84,7 @@ async function checkPassword() {
     } catch (error) {
         errorMessage.textContent = 'Ошибка соединения с сервером, попробуйте позже';
         passwordInput.focus();
-    }*/
+    }
 }
 // Вход как гость
 function enterAsGuest() {
@@ -619,4 +611,5 @@ function RemoveSelections(){
     document.getElementById("hero-image").classList.add('hidden');
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
+
 }
