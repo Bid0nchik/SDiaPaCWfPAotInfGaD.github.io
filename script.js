@@ -8,11 +8,11 @@ let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
 let currentTheme = 'dark';
+let filteredArticles = []; 
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
-    loadArticlesFromServer();
     showModeSelection();
     
     // Обработчики событий
@@ -41,6 +41,16 @@ function handleKeyPress(event) {
     }
 }
 
+// Меняем цвет текста в select
+const select = document.getElementById('form-select');
+    if (select.value == 'empty'){
+        select.style.color = '#8d8d8d';
+    }
+select.addEventListener("change", function(e){
+    select.style.color = '#ffffffff';
+});
+
+
 // ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
 async function checkPassword() {
     const password = document.getElementById('passwordInput').value.trim();
@@ -48,8 +58,15 @@ async function checkPassword() {
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
         return;
+    }else{//тут убрать else
+        currentMode = 'admin';
+            showAllFunctions();
+            hideWindowАuthorization();
+            showAdminFunctions();
+            errorMessage.textContent = '';
+            passwordInput.value = '';
     }
-    // Обработка ошибок с сервером
+    /* Обработка ошибок с сервером
     try {
         const response = await fetch(`${CONFIG.API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
             method: 'POST',
@@ -64,7 +81,7 @@ async function checkPassword() {
         if (data.success) {
             currentMode = 'admin';
             showAllFunctions();
-            hideAuthModal();
+            hideWindowАuthorization();
             showAdminFunctions();
             errorMessage.textContent = '';
             passwordInput.value = '';
@@ -75,7 +92,7 @@ async function checkPassword() {
     } catch (error) {
         errorMessage.textContent = 'Ошибка соединения с сервером, попробуйте позже';
         passwordInput.focus();
-    }
+    }*/
 }
 // Вход как гость
 function enterAsGuest() {
@@ -93,11 +110,13 @@ function hideWindowАuthorization() {
 }
 // Функции всех 
 function showAllFunctions(){
+    window.scrollTo(0,0);
     document.getElementById('themeToggle').classList.remove('hidden');
     document.getElementById('homeBtn').classList.remove('hidden');
-    document.getElementById('articlesList').classList.remove('hidden');
+    document.getElementById('selectionMenu').classList.remove('hidden');
     document.getElementById('logoutBtn').classList.remove('hidden');
     document.getElementById('userStatus').classList.remove('hidden');
+    document.getElementById('hero-image').classList.remove('hidden');
 }
 // Показать функции администратора
 function showAdminFunctions() {
@@ -114,22 +133,61 @@ function showGuestFunctions() {
 // Показать выбор режима
 function showModeSelection() {
     document.getElementById('authModal').classList.remove('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
     document.getElementById('articleEditor').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
+    document.getElementById('hero-image').classList.add('hidden');
 }
 
+// Переход на главную страницу
+function goToHome() {
+    document.getElementById('articleEditor').classList.add('hidden');
+    document.getElementById('articleView').classList.add('hidden');
+    document.getElementById('hero-image').classList.remove('hidden');
+    document.getElementById("selectionMenu").classList.remove('hidden');
+    document.getElementById("articlesContainer").classList.add('hidden');
+}
+function goToStat(){
+    document.getElementById('articleView').classList.add('hidden');
+    document.getElementById("articlesContainer").classList.remove('hidden');
+}
+
+// Выход из системы
+function logout() {
+    currentMode = null;
+    currentEditingArticleId = null;
+    currentImage = null;
+    
+    document.getElementById('themeToggle').classList.add('hidden');
+    document.getElementById('homeBtn').classList.add('hidden');
+    document.getElementById('newArticleBtn').classList.add('hidden');
+    document.getElementById('logoutBtn').classList.add('hidden');
+    document.getElementById('userStatus').classList.add('hidden');
+    document.getElementById('articleEditor').classList.add('hidden');
+    document.getElementById('articleView').classList.add('hidden');
+    document.getElementById('selectionMenu').classList.add('hidden');
+    document.getElementById('articlesContainer').classList.add('hidden');
+    showModeSelection();
+}
 
 // Загрузка статей с сервера
-async function loadArticlesFromServer() {
+async function loadArticlesFromServer(select1 = null) {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
 
-        const response = await fetch(`${CONFIG.API_URL}/articles`);
+        let url = `${CONFIG.API_URL}/articles`;
+        if (select1) {
+            url += `?select=${select1}`;
+        }
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
         articles = await response.json(); // записываем массив статей в массив парся json
+       if (section) {
+            filteredArticles = articles.filter(article => article.select === select1);
+        } else {
+            filteredArticles = [...articles];
+        }
         renderArticles();  
     } catch (error) {
         showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
@@ -140,7 +198,7 @@ async function loadArticlesFromServer() {
 
 // Отображение списка статей
 function renderArticles() {
-    const container = document.getElementById('articlesContainer');
+    const container = document.getElementById('arcticlesProg');
     if (articles.length === 0) {
         container.innerHTML = `
             <div class="no-articles">
@@ -148,19 +206,34 @@ function renderArticles() {
             </div>`;
         return;
     }
-    const sortedArticles = [...articles].sort((a, b) => new Date(b.date) - new Date(a.date)); // сортировка статей от новаых к старым
-    container.innerHTML = sortedArticles.map(article => `   
-        <div class="article-card" onclick="viewArticle('${article.id}')">
-            ${article.image ? `
-                <img src="${article.image}" alt="${article.title}" class="article-card-image" loading="lazy">
-            ` : `
-                <div class="article-card-placeholder">Статья</div>`}
-            <div class="article-card-content">
-                <h3 class="article-card-title">${escapeHtml(article.title)}</h3>
-                <p class="article-card-preview">${getPreview(article.content)}</p>
-                <p class="article-card-date">${formatDate(article.date)}</p>
-            </div>
-        </div>` ).join(''); // добавляем в контейнер сортированный массив и определяем содержание каждого элемента массива (статьи)
+
+
+    const sortedArticles = [...articles].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)); // сортировка статей от новых к старым
+    container.innerHTML = `
+        <div class="section-articles">
+            ${sortedArticles.map(article => `
+                <div class="article-card" onclick="viewArticle('${article.id}')">
+                    ${article.image ? `
+                        <img src="${article.image}" alt="${article.title}" 
+                             class="article-card-image" loading="lazy">
+                    ` : `
+                        <div class="article-card-placeholder">
+                            ${getSectionIcon(article.select)}
+                        </div>`}
+                    <div class="article-card-content">
+                        <div class="article-section-badge">
+                            ${getSectionName(article.select)}
+                        </div>
+                        <h3 class="article-card-title">${escapeHtml(article.title)}</h3>
+                        <p class="article-card-preview">${getPreview(article.content)}</p>
+                        <p class="article-card-date">${formatDate(article.date)}</p>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+         // добавляем в контейнер сортированный массив и определяем содержание каждого элемента массива (статьи)
 }
 
 // Показать/скрыть загрузку
@@ -174,7 +247,6 @@ function showLoading(show) {
         `;
     }
 }
-
 // Показать ошибку
 function showError(message) {
     const container = document.getElementById('articlesContainer');
@@ -189,30 +261,6 @@ function showError(message) {
             </div>
         `;
     }
-}
-
-// Переход на главную страницу
-function goToHome() {
-    document.getElementById('articleEditor').classList.add('hidden');
-    document.getElementById('articleView').classList.add('hidden');
-    document.getElementById('articlesList').classList.remove('hidden');
-}
-
-// Выход из системы
-function logout() {
-    currentMode = null;
-    currentEditingArticleId = null;
-    currentImage = null;
-    
-    document.getElementById('themeToggle').classList.add('hidden');
-    document.getElementById('homeBtn').classList.add('hidden');
-    document.getElementById('newArticleBtn').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
-    document.getElementById('userStatus').classList.add('hidden');
-    document.getElementById('articlesList').classList.add('hidden');
-    document.getElementById('articleEditor').classList.add('hidden');
-    document.getElementById('articleView').classList.add('hidden');
-    showModeSelection();
 }
 
 // Экранирование HTML
@@ -302,12 +350,12 @@ function showEditor() {
         alert('Доступ запрещен! Требуются права администратора.');
         return;
     }
-    
     currentEditingArticleId = null;
-    
-    document.getElementById('articlesList').classList.add('hidden');
+    document.getElementById('selectionMenu').classList.add('hidden');
+
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articleEditor').classList.remove('hidden');
+    document.getElementById('hero-image').classList.add('hidden');
     
     document.getElementById('articleTitle').value = '';
     document.getElementById('articleContent').value = '';
@@ -323,69 +371,21 @@ function showEditor() {
     document.getElementById('articleTitle').focus();
 }
 
-// Функция редактирования статьи
-function editArticle(articleId) {
-    if (currentMode !== 'admin') {
-        alert('Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
-    const article = articles.find(a => a.id === articleId);
-    if (!article) {
-        alert('Статья не найдена!');
-        return;
-    }
-
-    currentEditingArticleId = articleId;
-
-    document.getElementById('articleView').classList.add('hidden');
-    document.getElementById('articleEditor').classList.remove('hidden');
-
-    document.getElementById('articleTitle').value = article.title;
-    document.getElementById('articleContent').value = article.content;
-    
-    const preview = document.getElementById('imagePreview');
-    const removeBtn = document.getElementById('removeImageBtn');
-    
-    if (article.image) {
-        currentImage = article.image;
-        preview.innerHTML = `<img src="${article.image}" alt="Предпросмотр">`;
-        removeBtn.classList.remove('hidden');
-    } else {
-        preview.innerHTML = '';
-        removeBtn.classList.add('hidden');
-        currentImage = null;
-    }
-
-    document.getElementById('editorTitle').textContent = 'Редактирование статьи';
-    document.getElementById('saveButton').textContent = 'Сохранить изменения';
-    document.getElementById('saveButton').disabled = false;
-}
-
-// Отмена редактирования
-function cancelEditing() {
-    const message = currentEditingArticleId ? // если он есть(он появляется ток когда редактируем) то пишем 1 сооб иначе 2
-        'Вы уверены, что хотите отменить редактирование? Все несохраненные изменения будут потеряны.' :
-        'Вы уверены, что хотите отменить создание статьи? Все несохраненные данные будут потеряны.';
-    
-    if (confirm(message)) { // confirm это чтоб был выбор в отличии от alert
-        document.getElementById('articleEditor').classList.add('hidden');
-        currentEditingArticleId = null;
-        goToHome();
-    }
-}
-
 // Сохранение статьи
 async function saveArticle() {
     const title = document.getElementById('articleTitle').value.trim();
+    const select = document.getElementById('form-select').value.trim();
     const content = document.getElementById('articleContent').value.trim();
     const saveButton = document.getElementById('saveButton');
-    if (!title) {
+    if (select == "empty"){
+        alert('Пожалуйста, выберите раздел');
+        contentInput.focus();
+        return;
+    }if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
         titleInput.focus();
         return;
-    }
-    if (!content) {
+    }if (!content) {
         alert('Пожалуйста, введите содержание статьи');
         contentInput.focus();
         return;
@@ -396,8 +396,9 @@ async function saveArticle() {
 
     try {
         let savedArticle;
-        if (currentEditingArticleId) {
+        if (currentEditingArticleId){
             const articleData = {
+                select: select,
                 title: title,
                 content: content,
                 image: currentImage,
@@ -406,6 +407,7 @@ async function saveArticle() {
             savedArticle = await updateArticleOnServer(currentEditingArticleId, articleData);
         } else {
             const newArticle = {
+                select: select,
                 title: title,
                 content: content,
                 image: currentImage,
@@ -413,10 +415,9 @@ async function saveArticle() {
             };
             savedArticle = await saveArticleToServer(newArticle);
         }
-        await loadArticlesFromServer();
+        await loadArticlesFromServer(select);
         hideEditor();
         goToHome();
-        
     } catch (error) {
         alert(`Не удалось сохранить статью: ${error.message}`);
     } finally {
@@ -470,7 +471,6 @@ async function deleteArticleFromServer(articleId) {
         throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
     }
 }
-
 // Просмотр статьи
 function viewArticle(articleId) {
     const article = articles.find(a => a.id === articleId);
@@ -478,9 +478,9 @@ function viewArticle(articleId) {
         alert('Статья не найдена!');
         return;
     }
-    
-    document.getElementById('articlesList').classList.add('hidden');
+   document.getElementById("articlesContainer").classList.add('hidden');
     document.getElementById('articleEditor').classList.add('hidden');
+    document.getElementById('hero-image').classList.add('hidden');
     document.getElementById('articleView').classList.remove('hidden');
 
     const container = document.getElementById('articleContentContainer');
@@ -519,8 +519,59 @@ async function deleteArticle(articleId) {
         await loadArticlesFromServer();
         goToHome();
     } catch (error) {
-        console.error('Ошибка удаления:', error);
         alert(`Не удалось удалить статью: ${error.message}`);
+    }
+}
+
+// Функция редактирования статьи
+function editArticle(articleId) {
+    if (currentMode !== 'admin') {
+        alert('Доступ запрещен! Требуются права администратора.');
+        return;
+    }
+
+    const article = articles.find(a => a.id === articleId);
+    if (!article) {
+        alert('Статья не найдена!');
+        return;
+    }
+
+    currentEditingArticleId = articleId;
+    document.getElementById('articleView').classList.add('hidden');
+    document.getElementById('articleEditor').classList.remove('hidden');
+    document.getElementById('hero-image').classList.add('hidden');
+
+    document.getElementById('articleTitle').value = article.title;
+    document.getElementById('articleContent').value = article.content;
+    
+    const preview = document.getElementById('imagePreview');
+    const removeBtn = document.getElementById('removeImageBtn');
+    
+    if (article.image) {
+        currentImage = article.image;
+        preview.innerHTML = `<img src="${article.image}" alt="Предпросмотр">`;
+        removeBtn.classList.remove('hidden');
+    } else {
+        preview.innerHTML = '';
+        removeBtn.classList.add('hidden');
+        currentImage = null;
+    }
+
+    document.getElementById('editorTitle').textContent = 'Редактирование статьи';
+    document.getElementById('saveButton').textContent = 'Сохранить изменения';
+    document.getElementById('saveButton').disabled = false;
+}
+
+// Отмена редактирования
+function cancelEditing() {
+    const message = currentEditingArticleId ? // если он есть(он появляется ток когда редактируем) то пишем 1 сооб иначе 2
+        'Вы уверены, что хотите отменить редактирование? Все несохраненные изменения будут потеряны.' :
+        'Вы уверены, что хотите отменить создание статьи? Все несохраненные данные будут потеряны.';
+    
+    if (confirm(message)) { // confirm это чтоб был выбор в отличии от alert
+        document.getElementById('articleEditor').classList.add('hidden');
+        currentEditingArticleId = null;
+        goToHome();
     }
 }
 
@@ -531,21 +582,41 @@ function loadTheme() {
         currentTheme = savedTheme;
     }
     document.documentElement.setAttribute('data-theme', currentTheme);
-    updateThemeButton();
 }
 
 function toggleTheme() {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
     localStorage.setItem('blog_theme', currentTheme);
-    updateThemeButton();
 }
 
-function updateThemeButton() {
-    const themeButton = document.getElementById('themeToggle');
-    if (themeButton) {
-        themeButton.textContent = currentTheme === 'light' ? 'Темная тема' : 'Светлая тема';
-    }
+function LoadSectionProgramm(){
+   RemoveSelections();
+    document.getElementById('arcticlesProg').classList.remove('hidden')
+    document.getElementById('arcticlesOSINT').classList.add('hidden')
+    document.getElementById('arcticlesTrol').classList.add('hidden')
+
+    loadArticlesFromServer(Prog);
+}
+function LoadSectionOsint(){
+    RemoveSelections();
+    document.getElementById('arcticlesProg').classList.add('hidden')
+    document.getElementById('arcticlesOSINT').classList.remove('hidden')
+    document.getElementById('arcticlesTrol').classList.add('hidden')
+
+    loadArticlesFromServer(OSINt);
+}
+function LoadSectionTroll(){
+    RemoveSelections();
+    document.getElementById('arcticlesProg').classList.add('hidden')
+    document.getElementById('arcticlesOSINT').classList.add('hidden')
+    document.getElementById('arcticlesTrol').classList.remove('hidden')
+
+    loadArticlesFromServer(Trol);
 }
 
-
+function RemoveSelections(){
+    document.getElementById("hero-image").classList.add('hidden');
+    document.getElementById("selectionMenu").classList.add('hidden');
+    document.getElementById("articlesContainer").classList.remove('hidden');
+}

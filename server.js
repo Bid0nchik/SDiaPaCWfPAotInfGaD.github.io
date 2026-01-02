@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-// 🔥 САМОЕ ПЕРВОЕ - CORS ДО ЛЮБЫХ ДРУГИХ MIDDLEWARE
+
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -138,10 +138,17 @@ function validateArticleData(articleData, isUpdate = false) {
     return errors;
 }
 
-// GET /articles - получить все статьи
+// GET /articles - получить все статьи (с фильтрацией по разделу)
 app.get('/articles', async (req, res) => {
     try {
-        const snapshot = await db.collection('articles')
+        let query = db.collection('articles');
+        
+        // Если указан параметр select - фильтруем
+        if (req.query.select1) {
+            query = query.where('select', '==', req.query.select1);
+        }
+        
+        const snapshot = await query
             .orderBy('date', 'desc')
             .get();
         
@@ -149,6 +156,7 @@ app.get('/articles', async (req, res) => {
             id: doc.id,
             ...doc.data()
         }));
+        
         res.json(articles);
     } catch (error) {
         res.status(500).json({ 
@@ -184,9 +192,9 @@ app.get('/articles/:id', async (req, res) => {
 // POST /articles - создать статью
 app.post('/articles', async (req, res) => {
     try {
-        const { title, content, image } = req.body;
+        const { select, title, content, image } = req.body;
 
-        const validationErrors = validateArticleData({ title, content, image });
+        const validationErrors = validateArticleData({ select, title, content, image });
         if (validationErrors.length > 0) {
             return res.status(400).json({ 
                 error: 'Неверные данные',
@@ -195,6 +203,7 @@ app.post('/articles', async (req, res) => {
         }
 
         const articleData = {
+            select: select,
             title: title.trim(),
             content: content.trim(),
             image: image || null,

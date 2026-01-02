@@ -14,8 +14,12 @@
             <p>Введите пароль администратора для полного доступа или войдите как гость для чтения</p>
             <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
-                <button id="adminLoginBtn" class="btn btn-primary">Войти как администратор</button>
-                <button id="guestLoginBtn" class="btn btn-secondary">Войти как гость</button>
+                <button id="adminLoginBtn" class="btn btn-primary image-btn">
+                    <img src="images/button_EnterAdmin_dark.png" alt="Войти как админ" class="btn-image-enter_admin">
+                </button>
+                <button id="guestLoginBtn" class="btn btn-secondary image-btn">
+                    <img src="images/button_EnterGoust_dark.png" alt="Войти как гость" class="btn-image-enter_goust">
+                </button>
             </div>
             <p id="errorMessage" class="error-message"></p>
         </div>
@@ -26,14 +30,14 @@
         <div class="container">
             <h1>Melanis</h1>
             <div class="header-actions">
-                <button id="homeBtn" class="btn btn-secondary hidden" onclick="goToHome()">
-                    Главная
+                <button id="homeBtn" class="image-btn btn btn-secondary hidden" onclick="goToHome()">
+                    <img src="images/button_home_dark.png" alt="Главная" class="btn-image">
                 </button>
                 <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
                     Новая статья
                 </button>
-                <button id="themeToggle" class="btn btn-secondary hidden" onclick="toggleTheme()">
-                    Тёмная тема
+                <button id="themeToggle" class="image-btn btn btn-secondary hidden" onclick="toggleTheme()">
+                    <img src="images/button_LigthTheme_dark.png" id = "themeChange" alt="Светлая тема" class="btn-image-changetheme btn-image-changethemeToLigth">
                 </button>
                 <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
                     Выйти
@@ -43,16 +47,29 @@
         </div>
     </header>
 
+<section class="hero-image" id = "hero-image">
+    <img alt="Главное изображение">
+</section>
+
     <!-- Основной контент -->
     <main class="main">
         <div class="container">
-            <!-- Список статей -->
-            <div id="articlesList" class="articles-list">
-                <h2>Новые статьи</h2>
-                <div id="articlesContainer" class="articles-container">
-                    <!-- Статьи будут загружаться здесь -->
-                </div>
+            <!-- Список разделов статей -->
+            <div id = "selectionMenu" class = "selectionMenu hidden">
+                <button onclick="LoadSectionProgramm()" class = "image-btn">
+                    <img src='images/SectProg_dark_pc.png' id = "SectProg">
+                </button>
+                <button onclick="LoadSectionOsint()" class = "image-btn">
+                    <img src='images/SectOsint_dark_pc.png' id = "SectOsint">
+                </button>
+                <button onclick="LoadSectionTroll()" class = "image-btn">
+                    <img src='images/Troll_dark_pc.png.png' id = "SectTroll">
+                </button>
             </div>
+            <div id="articlesContainer" class="articles-container hidden">
+                <!--Здесь статьи!!!-->
+            </div>
+        </div>
 
             <!-- Редактор статьи (скрыт по умолчанию) -->
             <div id="articleEditor" class="article-editor hidden">
@@ -65,6 +82,18 @@
                 </div>
 
                 <div class="editor-form">
+
+                    <!-- Блок 0: Раздел -->
+                    <div class="form-block">
+                        <label for="articleSelect">Раздел</label>
+                        <select id="form-select" class = "form-select">
+                            <option value = "empty" selected disabled>Выберите раздел...</option>
+                            <option value = "Prog" >Программирование</option>
+                            <option value = "OSINT">OSINT</option>
+                            <option value = "Trol">Троллинг</option>
+                        </select>
+                    </div>
+
                     <!-- Блок 1: Заголовок -->
                     <div class="form-block">
                         <label for="articleTitle">Заголовок статьи</label>
@@ -93,7 +122,7 @@
 
             <!-- Просмотр статьи (скрыт по умолчанию) -->
             <div id="articleView" class="article-view hidden">
-               <button onclick="goToHome()" class="btn btn-secondary back-btn">← Назад к статьям</button>
+                <button onclick="goToStat()" class="btn btn-secondary back-btn">← Назад к статьям</button>
                 <article id="articleContentContainer" class="article-content">
                     <!-- Содержание статьи будет здесь -->
                 </article>
@@ -104,11 +133,10 @@
     <!-- Подвал -->
     <footer class="footer">
         <div class="container">
-            <p>© 2025 Melanis. Все права защищены.</p>
+            <p>© 2026 Melanis. Все права защищены.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-
