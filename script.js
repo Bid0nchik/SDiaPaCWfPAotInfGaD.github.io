@@ -408,7 +408,6 @@ async function saveArticle() {
             savedArticle = await saveArticleToServer(newArticle);
         }
         await loadArticlesFromServer(select);
-        hideEditor();
         goToHome();
     } catch (error) {
         alert(`Не удалось сохранить статью: ${error.message}`);
@@ -613,3 +612,4 @@ function RemoveSelections(){
     document.getElementById("articlesContainer").classList.remove('hidden');
 
 }
+
