@@ -633,3 +633,4 @@ function RemoveSelections(){
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
 }
+
