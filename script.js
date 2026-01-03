@@ -8,7 +8,7 @@ let currentImage = null;
 let currentMode = null;
 let currentEditingArticleId = null;
 let currentTheme = 'dark';
-let filteredArticles = []; 
+let currentSection = null;
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
@@ -176,7 +176,7 @@ async function loadArticlesFromServer(section = null) {
 
         let url = `${CONFIG.API_URL}/articles`;
         if (section) {
-            url += `?select=${section}`;
+            url += `/${section}`;
         }
         const response = await fetch(url);
         if (!response.ok) {
@@ -395,26 +395,20 @@ async function saveArticle() {
     saveButton.textContent = 'Сохранение...';
 
     try {
-        let savedArticle;
-        if (currentEditingArticleId){
-            const articleData = {
-                select: select,
-                title: title,
-                content: content,
-                image: currentImage,
-                date: new Date().toISOString()
-            };
-            savedArticle = await updateArticleOnServer(currentEditingArticleId, articleData);
-        } else {
-            const newArticle = {
-                select: select,
-                title: title,
-                content: content,
-                image: currentImage,
-                date: new Date().toISOString()
-            };
-            savedArticle = await saveArticleToServer(newArticle);
-        }
+        const articleData = {
+            title: title,
+            content: content,
+            image: currentImage,
+            date: new Date().toISOString()
+        };
+            let savedArticle;
+            if (currentEditingArticleId) {
+                // Обновление существующей статьи
+                savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
+            } else {
+                // Создание новой статьи
+                savedArticle = await saveArticleToServer(select, articleData);
+            }
         await loadArticlesFromServer(select);
         goToHome();
     } catch (error) {
@@ -426,8 +420,8 @@ async function saveArticle() {
 }
 
 // Обновление статьи на сервере
-async function updateArticleOnServer(articleId, articleData) {
-    const response = await fetch(`${CONFIG.API_URL}/articles/${articleId}`, {
+async function updateArticleOnServer(section, articleId, articleData) {
+    const response = await fetch(`${CONFIG.API_URL}/articles/${section}/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -443,13 +437,13 @@ async function updateArticleOnServer(articleId, articleData) {
 }
 
 // Сохранение статьи на сервер
-async function saveArticleToServer(article) {
-    const response = await fetch(`${CONFIG.API_URL}/articles`, {
+async function saveArticleToServer(article, articleData) {
+    const response = await fetch(`${CONFIG.API_URL}/articles/${section}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(article)
+        body: JSON.stringify(articleData)
     });
 
     if (!response.ok) {
@@ -460,8 +454,8 @@ async function saveArticleToServer(article) {
 }
 
 // Удаление статьи с сервера
-async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${CONFIG.API_URL}/articles/${articleId}`, {
+async function deleteArticleFromServer(section, articleId) {
+    const response = await fetch(`${CONFIG.API_URL}/articles/${section}/${articleId}`, {
         method: 'DELETE'
     });
 
@@ -514,6 +508,11 @@ async function deleteArticle(articleId) {
         return;
     }
     try {
+        const article = articles.find(a => a.id === articleId);
+        if (!article) {
+            alert('Статья не найдена!');
+            return;
+        }
         await deleteArticleFromServer(articleId);
         await loadArticlesFromServer();
         goToHome();
@@ -536,13 +535,15 @@ function editArticle(articleId) {
     }
 
     currentEditingArticleId = articleId;
+    currentSection = article.section;
+
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articleEditor').classList.remove('hidden');
     document.getElementById('hero-image').classList.add('hidden');
 
     document.getElementById('articleTitle').value = article.title;
     document.getElementById('articleContent').value = article.content;
-    
+    document.getElementById('form-select').value = article.section;
     const preview = document.getElementById('imagePreview');
     const removeBtn = document.getElementById('removeImageBtn');
     
@@ -559,6 +560,16 @@ function editArticle(articleId) {
     document.getElementById('editorTitle').textContent = 'Редактирование статьи';
     document.getElementById('saveButton').textContent = 'Сохранить изменения';
     document.getElementById('saveButton').disabled = false;
+}
+
+
+function getSectionName(section) {
+    const sections = {
+        'prog': 'Программирование',
+        'osint': 'OSINT',
+        'trol': 'Троллинг'
+    };
+    return sections[section] || section;
 }
 
 // Отмена редактирования
@@ -591,6 +602,7 @@ function toggleTheme() {
 
 function LoadSectionProgramm(){
    RemoveSelections();
+   currentSection = 'Prog'
     document.getElementById('arcticlesProg').classList.remove('hidden')
     document.getElementById('arcticlesOSINT').classList.add('hidden')
     document.getElementById('arcticlesTrol').classList.add('hidden')
@@ -599,6 +611,7 @@ function LoadSectionProgramm(){
 }
 function LoadSectionOsint(){
     RemoveSelections();
+    currentSection = 'OSINT'
     document.getElementById('arcticlesProg').classList.add('hidden')
     document.getElementById('arcticlesOSINT').classList.remove('hidden')
     document.getElementById('arcticlesTrol').classList.add('hidden')
@@ -607,6 +620,7 @@ function LoadSectionOsint(){
 }
 function LoadSectionTroll(){
     RemoveSelections();
+    currentSection = 'Trol'
     document.getElementById('arcticlesProg').classList.add('hidden')
     document.getElementById('arcticlesOSINT').classList.add('hidden')
     document.getElementById('arcticlesTrol').classList.remove('hidden')

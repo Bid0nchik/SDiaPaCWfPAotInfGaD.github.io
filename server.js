@@ -139,14 +139,15 @@ function validateArticleData(articleData, isUpdate = false) {
 }
 
 // GET /articles - получить все статьи (с фильтрацией по разделу)
-app.get('/articles', async (req, res) => {
+app.get('/articles/:section', async (req, res) => {
     try {
-        let query = db.collection('articles');
-        
-        // Если указан параметр select - фильтруем
-        if (req.query.select) {
-            query = query.where('select', '==', req.query.select);
+        const section = req.params.section;
+        let collectionName = 'articles';
+        if (section && ['Prog', 'OSINT', 'Trol'].includes(section)){
+            collectionName = `articles_${section}`;
         }
+
+        let query = db.collection(collectionName);
         
         const snapshot = await query
             .orderBy('date', 'desc')
@@ -154,6 +155,7 @@ app.get('/articles', async (req, res) => {
         
         const articles = snapshot.docs.map(doc => ({
             id: doc.id,
+            section: section || 'general',
             ...doc.data()
         }));
         
@@ -190,11 +192,18 @@ app.get('/articles/:id', async (req, res) => {
 });
 
 // POST /articles - создать статью
-app.post('/articles', async (req, res) => {
+app.post('/articles/:section', async (req, res) => {
     try {
-        const { select, title, content, image } = req.body;
+        const { title, content, image } = req.body;
+        const section = req.params.section;
 
-        const validationErrors = validateArticleData({ select, title, content, image });
+        if (!['prog', 'osint', 'trol'].includes(section)) {
+            return res.status(400).json({ 
+                error: 'Неверный раздел. Допустимые значения: prog, osint, trol' 
+            });
+        }
+
+        const validationErrors = validateArticleData({ title, content, image });
         if (validationErrors.length > 0) {
             return res.status(400).json({ 
                 error: 'Неверные данные',
@@ -203,18 +212,18 @@ app.post('/articles', async (req, res) => {
         }
 
         const articleData = {
-            select: select,
             title: title.trim(),
             content: content.trim(),
             image: image || null,
             date: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
-
-        const docRef = await db.collection('articles').add(articleData);
+        const collectionName = `articles_${section}`;
+        const docRef = await db.collection(collectionName).add(articleData);
         
         const responseArticle = {
             id: docRef.id,
+            section: section,
             ...articleData
         };
         res.status(201).json(responseArticle);
@@ -227,11 +236,19 @@ app.post('/articles', async (req, res) => {
 });
 
 // PATCH /articles/:id - обновить статью
-app.patch('/articles/:id', async (req, res) => {
+app.patch('/articles/:section/:id', async (req, res) => {
     try {
         const { title, content, image } = req.body;
-        
-        const doc = await db.collection('articles').doc(req.params.id).get();
+        const section = req.params.section;
+        const arcticleID = req.params.id;
+
+        if (!['prog', 'osint', 'trol'].includes(section)) {
+            return res.status(400).json({ 
+                error: 'Неверный раздел' 
+            });
+        }
+        const collectionName = `articles_${section}`;
+        const doc = await db.collection(collectionName).doc(arcticleID).get();
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
@@ -252,11 +269,12 @@ app.patch('/articles/:id', async (req, res) => {
         if (content !== undefined) updateData.content = content.trim();
         if (image !== undefined) updateData.image = image;
 
-        await db.collection('articles').doc(req.params.id).update(updateData);
+        await db.collection(collectionName).doc(arcticleID).update(updateData);
         
-        const updatedDoc = await db.collection('articles').doc(req.params.id).get();
+        const updatedDoc = await db.collection(collectionName).doc(arcticleID).get();
         const updatedArticle = {
             id: updatedDoc.id,
+            section: section,
             ...updatedDoc.data()
         };
         res.json(updatedArticle);
@@ -268,15 +286,26 @@ app.patch('/articles/:id', async (req, res) => {
     }
 });
 
-// DELETE /articles/:id - удалить статью
-app.delete('/articles/:id', async (req, res) => {
+// DELETE /articles/:section/:id - удалить статью из раздела
+app.delete('/articles/:section/:id', async (req, res) => {
     try {
-        const doc = await db.collection('articles').doc(req.params.id).get();
+        const section = req.params.section;
+        const articleId = req.params.id;
+        
+        if (!['prog', 'osint', 'trol'].includes(section)) {
+            return res.status(400).json({ 
+                error: 'Неверный раздел' 
+            });
+        }
+        
+        const collectionName = `articles_${section}`;
+        const doc = await db.collection(collectionName).doc(articleId).get();
+        
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
 
-        await db.collection('articles').doc(req.params.id).delete();
+        await db.collection(collectionName).doc(articleId).delete();
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ 
