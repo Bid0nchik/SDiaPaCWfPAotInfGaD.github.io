@@ -603,28 +603,16 @@ function toggleTheme() {
 function LoadSectionProgramm(){
    RemoveSelections();
    currentSection = 'Prog'
-    document.getElementById('arcticlesProg').classList.remove('hidden')
-    document.getElementById('arcticlesOSINT').classList.add('hidden')
-    document.getElementById('arcticlesTrol').classList.add('hidden')
-
     loadArticlesFromServer('Prog');
 }
 function LoadSectionOsint(){
     RemoveSelections();
     currentSection = 'OSINT'
-    document.getElementById('arcticlesProg').classList.add('hidden')
-    document.getElementById('arcticlesOSINT').classList.remove('hidden')
-    document.getElementById('arcticlesTrol').classList.add('hidden')
-
     loadArticlesFromServer('OSINT');
 }
 function LoadSectionTroll(){
     RemoveSelections();
     currentSection = 'Trol'
-    document.getElementById('arcticlesProg').classList.add('hidden')
-    document.getElementById('arcticlesOSINT').classList.add('hidden')
-    document.getElementById('arcticlesTrol').classList.remove('hidden')
-
     loadArticlesFromServer('Trol');
 }
 
@@ -633,4 +621,5 @@ function RemoveSelections(){
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
 }
+
 
