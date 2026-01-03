@@ -58,7 +58,15 @@ async function checkPassword() {
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
         return;
+    }else{//тут убрать else
+        currentMode = 'admin';
+            showAllFunctions();
+            hideWindowАuthorization();
+            showAdminFunctions();
+            errorMessage.textContent = '';
+            passwordInput.value = '';
     }
+    /* Обработка ошибок с сервером
     try {
         const response = await fetch(`${CONFIG.API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
             method: 'POST',
@@ -84,7 +92,7 @@ async function checkPassword() {
     } catch (error) {
         errorMessage.textContent = 'Ошибка соединения с сервером, попробуйте позже';
         passwordInput.focus();
-    }
+    }*/
 }
 // Вход как гость
 function enterAsGuest() {
@@ -162,13 +170,13 @@ function logout() {
 }
 
 // Загрузка статей с сервера
-async function loadArticlesFromServer(select1 = null) {
+async function loadArticlesFromServer(section = null) {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
 
         let url = `${CONFIG.API_URL}/articles`;
-        if (select1) {
-            url += `?select=${select1}`;
+        if (section) {
+            url += `?select=${section}`;
         }
         const response = await fetch(url);
         if (!response.ok) {
@@ -176,7 +184,7 @@ async function loadArticlesFromServer(select1 = null) {
         }
         articles = await response.json(); // записываем массив статей в массив парся json
        if (section) {
-            filteredArticles = articles.filter(article => article.select === select1);
+            filteredArticles = articles.filter(article => article.select === section);
         } else {
             filteredArticles = [...articles];
         }
@@ -190,7 +198,7 @@ async function loadArticlesFromServer(select1 = null) {
 
 // Отображение списка статей
 function renderArticles() {
-    const container = document.getElementById('arcticlesProg');
+    const container = document.getElementById('articlesContainer');
     if (articles.length === 0) {
         container.innerHTML = `
             <div class="no-articles">
@@ -200,7 +208,7 @@ function renderArticles() {
     }
 
 
-    const sortedArticles = [...articles].sort((a, b) => 
+    const sortedArticles = [...filteredArticles].sort((a, b) => 
         new Date(b.date) - new Date(a.date)); // сортировка статей от новых к старым
     container.innerHTML = `
         <div class="section-articles">
@@ -366,12 +374,12 @@ function showEditor() {
 // Сохранение статьи
 async function saveArticle() {
     const title = document.getElementById('articleTitle').value.trim();
-    const select = document.getElementById('form-select').value.trim();
+    const select = document.getElementById('form-select').value;
     const content = document.getElementById('articleContent').value.trim();
     const saveButton = document.getElementById('saveButton');
     if (select == "empty"){
         alert('Пожалуйста, выберите раздел');
-        contentInput.focus();
+        document.getElementById('form-select').focus();
         return;
     }if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
@@ -587,7 +595,7 @@ function LoadSectionProgramm(){
     document.getElementById('arcticlesOSINT').classList.add('hidden')
     document.getElementById('arcticlesTrol').classList.add('hidden')
 
-    loadArticlesFromServer(Prog);
+    loadArticlesFromServer('Prog');
 }
 function LoadSectionOsint(){
     RemoveSelections();
@@ -595,7 +603,7 @@ function LoadSectionOsint(){
     document.getElementById('arcticlesOSINT').classList.remove('hidden')
     document.getElementById('arcticlesTrol').classList.add('hidden')
 
-    loadArticlesFromServer(OSINt);
+    loadArticlesFromServer('OSINT');
 }
 function LoadSectionTroll(){
     RemoveSelections();
@@ -603,13 +611,11 @@ function LoadSectionTroll(){
     document.getElementById('arcticlesOSINT').classList.add('hidden')
     document.getElementById('arcticlesTrol').classList.remove('hidden')
 
-    loadArticlesFromServer(Trol);
+    loadArticlesFromServer('Trol');
 }
 
 function RemoveSelections(){
     document.getElementById("hero-image").classList.add('hidden');
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
-
 }
-

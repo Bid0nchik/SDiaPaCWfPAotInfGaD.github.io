@@ -144,8 +144,8 @@ app.get('/articles', async (req, res) => {
         let query = db.collection('articles');
         
         // Если указан параметр select - фильтруем
-        if (req.query.select1) {
-            query = query.where('select', '==', req.query.select1);
+        if (req.query.select) {
+            query = query.where('select', '==', req.query.select);
         }
         
         const snapshot = await query
