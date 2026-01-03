@@ -558,9 +558,9 @@ function editArticle(articleId) {
 
 function getSectionName(section) {
     const sections = {
-        'prog': 'Программирование',
-        'osint': 'OSINT',
-        'trol': 'Троллинг'
+        'Prog': 'Программирование',
+        'OSINT': 'OSINT',
+        'Trol': 'Троллинг'
     };
     return sections[section] || section;
 }
@@ -627,3 +627,4 @@ function RemoveSelections(){
     document.getElementById("articlesContainer").classList.remove('hidden');
 
 }
+
