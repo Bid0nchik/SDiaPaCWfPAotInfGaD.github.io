@@ -341,13 +341,13 @@ app.use('*', (req, res) => {
     res.status(404).json({ 
         error: 'Маршрут не найден',
         availableEndpoints: [
-            'GET /articles',
-            'GET /articles/:id',
-            'POST /articles',
-            'PATCH /articles/:id',
-            'DELETE /articles/:id',
-            'POST /auth/check-password',
-            'GET /health'
+            'GET /articles/:section? - получить статьи раздела (Prog, OSINT, Trol)',
+            'GET /articles/:section/:id - получить конкретную статью',
+            'POST /articles/:section - создать статью в разделе',
+            'PATCH /articles/:section/:id - обновить статью',
+            'DELETE /articles/:section/:id - удалить статью',
+            'POST /auth/check-password - проверка пароля администратора',
+            'GET /health - проверка состояния сервера'
         ]
     });
 });
