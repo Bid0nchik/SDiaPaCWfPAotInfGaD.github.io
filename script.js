@@ -431,14 +431,7 @@ async function deleteArticle(section, articleId) {
             alert('Статья не найдена!');
             return;
         }
-        const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
-        method: 'DELETE'});
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-        }
-
+        await deleteArticleFromServer(section, articleId);
         await loadArticlesFromServer();
         goToHome();
     } catch (error) {
@@ -446,8 +439,20 @@ async function deleteArticle(section, articleId) {
     }
 }
 
+// Удаление статьи с сервера
+async function deleteArticleFromServer(section, articleId) {
+    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+        method: 'DELETE'
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+}
+
 // Просмотр статьи
-function viewArticle(section, articleId) {
+function viewArticle(section,articleId) {
     const article = articles.find(a => a.id === articleId);
     if (!article) {
         alert('Статья не найдена!');
