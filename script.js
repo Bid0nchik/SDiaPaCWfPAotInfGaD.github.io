@@ -1,8 +1,4 @@
-// Конфигурация приложения
-const CONFIG = {
-    API_URL: 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com'
-};
-
+const API_URL = 'https://sdiapacwfpaotinfgad-github-io-1.onrender.com';
 let articles = [];
 let currentImage = null;
 let currentMode = null;
@@ -58,10 +54,16 @@ async function checkPassword() {
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
         return;
+    }else{//тут убрать else
+        currentMode = 'admin';
+            showAllFunctions();
+            hideWindowАuthorization();
+            showAdminFunctions();
+            errorMessage.textContent = '';
+            passwordInput.value = '';
     }
-    Обработка ошибок с сервером
     try {
-        const response = await fetch(`${CONFIG.API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
+        const response = await fetch(`${API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -163,24 +165,14 @@ function logout() {
 }
 
 // Загрузка статей с сервера
-async function loadArticlesFromServer(section = null) {
+async function loadArticlesFromServer(section) {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-
-        let url = `${CONFIG.API_URL}/articles`;
-        if (section) {
-            url += `/${section}`;
-        }
-        const response = await fetch(url);
+        const response = await fetch(`${API_URL}/${section}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
         articles = await response.json(); // записываем массив статей в массив парся json
-       if (section) {
-            filteredArticles = articles.filter(article => article.select === section);
-        } else {
-            filteredArticles = [...articles];
-        }
         renderArticles();  
     } catch (error) {
         showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
@@ -199,25 +191,15 @@ function renderArticles() {
             </div>`;
         return;
     }
-
-
-    const sortedArticles = [...filteredArticles].sort((a, b) => 
-        new Date(b.date) - new Date(a.date)); // сортировка статей от новых к старым
     container.innerHTML = `
         <div class="section-articles">
-            ${sortedArticles.map(article => `
+            ${[...articles].map(article => `
                 <div class="article-card" onclick="viewArticle('${article.id}')">
                     ${article.image ? `
                         <img src="${article.image}" alt="${article.title}" 
                              class="article-card-image" loading="lazy">
-                    ` : `
-                        <div class="article-card-placeholder">
-                            ${getSectionIcon(article.select)}
-                        </div>`}
+                    `:''}
                     <div class="article-card-content">
-                        <div class="article-section-badge">
-                            ${getSectionName(article.select)}
-                        </div>
                         <h3 class="article-card-title">${escapeHtml(article.title)}</h3>
                         <p class="article-card-preview">${getPreview(article.content)}</p>
                         <p class="article-card-date">${formatDate(article.date)}</p>
@@ -226,7 +208,7 @@ function renderArticles() {
             `).join('')}
         </div>
     `;
-         // добавляем в контейнер сортированный массив и определяем содержание каждого элемента массива (статьи)
+    // добавляем в контейнер массив и определяем содержание каждого элемента массива (статьи)
 }
 
 // Показать/скрыть загрузку
@@ -372,7 +354,6 @@ async function saveArticle() {
     const saveButton = document.getElementById('saveButton');
     if (select == "empty"){
         alert('Пожалуйста, выберите раздел');
-        document.getElementById('form-select').focus();
         return;
     }if (!title) {
         alert('Пожалуйста, введите заголовок статьи');
@@ -412,26 +393,9 @@ async function saveArticle() {
     }
 }
 
-// Обновление статьи на сервере
-async function updateArticleOnServer(section, articleId, articleData) {
-    const response = await fetch(`${CONFIG.API_URL}/articles/${section}/${articleId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData)
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-    }
-    return await response.json();
-}
-
 // Сохранение статьи на сервер
-async function saveArticleToServer(article, articleData) {
-    const response = await fetch(`${CONFIG.API_URL}/articles/${section}`, {
+async function saveArticleToServer(section, articleData) {
+    const response = await fetch(`${API_URL}/articles/${section}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -446,9 +410,45 @@ async function saveArticleToServer(article, articleData) {
     return await response.json();
 }
 
+// Обновление статьи на сервере
+async function updateArticleOnServer(section, articleId, articleData) {
+    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(articleData)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+    return await response.json();
+}
+
+// Удаление статьи
+async function deleteArticle(articleId) {
+    if (!confirm('Вы уверены, что хотите удалить эту статью? Это действие нельзя отменить.')) {
+        return;
+    }
+    try {
+        const article = articles.find(a => a.id === articleId);
+        if (!article) {
+            alert('Статья не найдена!');
+            return;
+        }
+        await deleteArticleFromServer(articleId);
+        await loadArticlesFromServer();
+        goToHome();
+    } catch (error) {
+        alert(`Не удалось удалить статью: ${error.message}`);
+    }
+}
+
 // Удаление статьи с сервера
 async function deleteArticleFromServer(section, articleId) {
-    const response = await fetch(`${CONFIG.API_URL}/articles/${section}/${articleId}`, {
+    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
         method: 'DELETE'
     });
 
@@ -457,6 +457,7 @@ async function deleteArticleFromServer(section, articleId) {
         throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
     }
 }
+
 // Просмотр статьи
 function viewArticle(articleId) {
     const article = articles.find(a => a.id === articleId);
@@ -493,25 +494,6 @@ function viewArticle(articleId) {
         `;
     }
     container.innerHTML = articleHTML;
-}
-
-// Удаление статьи
-async function deleteArticle(articleId) {
-    if (!confirm('Вы уверены, что хотите удалить эту статью? Это действие нельзя отменить.')) {
-        return;
-    }
-    try {
-        const article = articles.find(a => a.id === articleId);
-        if (!article) {
-            alert('Статья не найдена!');
-            return;
-        }
-        await deleteArticleFromServer(articleId);
-        await loadArticlesFromServer();
-        goToHome();
-    } catch (error) {
-        alert(`Не удалось удалить статью: ${error.message}`);
-    }
 }
 
 // Функция редактирования статьи
@@ -614,6 +596,3 @@ function RemoveSelections(){
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
 }
-
-
-

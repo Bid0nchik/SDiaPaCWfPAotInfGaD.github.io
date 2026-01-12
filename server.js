@@ -1,28 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-const admin = require('firebase-admin');
-const rateLimit = require('express-rate-limit');
-
-const app = express();
+const cors = require('cors');                   // 
+const admin = require('firebase-admin');        // 
+const rateLimit = require('express-rate-limit');// 
 const PORT = process.env.PORT || 3001;
 
+const express = require('express');             // создание фв express(из node)
+const app = express();      // создание приложения express
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true
 }));
 
-// 🔥 Затем preflight
 app.options('*', cors());
 
 app.use((req, res, next) => {
-    // Кэшируем GET запросы на 30 секунд
     if (req.method === 'GET') {
         res.set('Cache-Control', 'public, max-age=30');
     }
     next();
 });
-// Настройка лимита запросов
+
+// Лимит запросов: на скоко блок, сколько макс запросов, что пишем
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -139,23 +137,16 @@ function validateArticleData(articleData, isUpdate = false) {
 }
 
 // GET /articles - получить все статьи (с фильтрацией по разделу)
-app.get('/articles/:section', async (req, res) => {
+app.get('/:section', async (req, res) => {
     try {
-        const section = req.params.section;
-        let collectionName = 'articles';
-        if (section && ['Prog', 'OSINT', 'Trol'].includes(section)){
-            collectionName = `articles_${section}`;
-        }
-
-        let query = db.collection(collectionName);
-        
+        let section = req.params.section;
+        let query = db.collection(section);
         const snapshot = await query
             .orderBy('date', 'desc')
             .get();
         
         const articles = snapshot.docs.map(doc => ({
             id: doc.id,
-            section: section || 'general',
             ...doc.data()
         }));
         
@@ -197,9 +188,9 @@ app.post('/articles/:section', async (req, res) => {
         const { title, content, image } = req.body;
         const section = req.params.section;
 
-        if (!['prog', 'osint', 'trol'].includes(section)) {
+        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
-                error: 'Неверный раздел. Допустимые значения: prog, osint, trol' 
+                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
             });
         }
 
@@ -218,12 +209,10 @@ app.post('/articles/:section', async (req, res) => {
             date: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
-        const collectionName = `articles_${section}`;
-        const docRef = await db.collection(collectionName).add(articleData);
+        const docRef = await db.collection(section).add(articleData);
         
         const responseArticle = {
             id: docRef.id,
-            section: section,
             ...articleData
         };
         res.status(201).json(responseArticle);
@@ -242,13 +231,12 @@ app.patch('/articles/:section/:id', async (req, res) => {
         const section = req.params.section;
         const arcticleID = req.params.id;
 
-        if (!['prog', 'osint', 'trol'].includes(section)) {
+        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
-                error: 'Неверный раздел' 
+                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
             });
         }
-        const collectionName = `articles_${section}`;
-        const doc = await db.collection(collectionName).doc(arcticleID).get();
+        const doc = await db.collection(section).doc(arcticleID).get();
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
@@ -269,12 +257,11 @@ app.patch('/articles/:section/:id', async (req, res) => {
         if (content !== undefined) updateData.content = content.trim();
         if (image !== undefined) updateData.image = image;
 
-        await db.collection(collectionName).doc(arcticleID).update(updateData);
+        await db.collection(section).doc(arcticleID).update(updateData);
         
-        const updatedDoc = await db.collection(collectionName).doc(arcticleID).get();
+        const updatedDoc = await db.collection(section).doc(arcticleID).get();
         const updatedArticle = {
             id: updatedDoc.id,
-            section: section,
             ...updatedDoc.data()
         };
         res.json(updatedArticle);
@@ -292,20 +279,16 @@ app.delete('/articles/:section/:id', async (req, res) => {
         const section = req.params.section;
         const articleId = req.params.id;
         
-        if (!['prog', 'osint', 'trol'].includes(section)) {
+        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
-                error: 'Неверный раздел' 
+                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
             });
         }
-        
-        const collectionName = `articles_${section}`;
-        const doc = await db.collection(collectionName).doc(articleId).get();
-        
+        const doc = await db.collection(section).doc(articleId).get();
         if (!doc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
-
-        await db.collection(collectionName).doc(articleId).delete();
+        await db.collection(section).doc(articleId).delete();
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ 
@@ -318,7 +301,7 @@ app.delete('/articles/:section/:id', async (req, res) => {
 // Health check
 app.get('/health', async (req, res) => {
     try {
-        const snapshot = await db.collection('articles').count().get();
+        const snapshot = await db.collection('Prog').count().get();
         const articleCount = snapshot.data().count;
         
         res.json({ 
