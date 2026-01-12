@@ -54,13 +54,6 @@ async function checkPassword() {
     if (!password) {
         errorMessage.textContent = 'Введите пароль';
         return;
-    }else{//тут убрать else
-        currentMode = 'admin';
-            showAllFunctions();
-            hideWindowАuthorization();
-            showAdminFunctions();
-            errorMessage.textContent = '';
-            passwordInput.value = '';
     }
     try {
         const response = await fetch(`${API_URL}/auth/check-password`, { // Спрашиваем сервер t/f
@@ -327,7 +320,7 @@ function showEditor() {
     }
     currentEditingArticleId = null;
     document.getElementById('selectionMenu').classList.add('hidden');
-
+    document.getElementById('articlesContainer').classList.add('hidden');
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articleEditor').classList.remove('hidden');
     document.getElementById('hero-image').classList.add('hidden');
@@ -595,4 +588,5 @@ function RemoveSelections(){
     document.getElementById("hero-image").classList.add('hidden');
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
+
 }
