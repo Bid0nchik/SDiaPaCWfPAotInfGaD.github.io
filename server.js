@@ -86,7 +86,7 @@ app.post('/auth/check-password', async (req, res) => {
         }
         if (password === process.env.ADMIN_PASSWORD) {
             res.json({ 
-                success: false,
+                success: true,
                 message: 'Авторизация успешна'
             });
         } else {
@@ -349,3 +349,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
