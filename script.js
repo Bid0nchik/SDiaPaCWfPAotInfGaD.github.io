@@ -56,7 +56,7 @@ async function checkPassword() {
         return;
     }
     try {
-        const response = await fetch(`${"https://sdiapacwfpaotinfgad-github-io-1.onrender.com"}/auth/check-password`, { // Спрашиваем сервер t/f
+         const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auth/check-password`, { // Спрашиваем сервер t/f
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -589,3 +589,4 @@ function RemoveSelections(){
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
 }
+
