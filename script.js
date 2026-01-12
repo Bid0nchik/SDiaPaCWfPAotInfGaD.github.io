@@ -431,23 +431,18 @@ async function deleteArticle(section, articleId) {
             alert('Статья не найдена!');
             return;
         }
-        await deleteArticleFromServer(section, articleId);
+        const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+        method: 'DELETE'});
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+        }
+
         await loadArticlesFromServer();
         goToHome();
     } catch (error) {
         alert(`Не удалось удалить статью: ${error.message}`);
-    }
-}
-
-// Удаление статьи с сервера
-async function deleteArticleFromServer(section, articleId) {
-    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
-        method: 'DELETE'
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
     }
 }
 
