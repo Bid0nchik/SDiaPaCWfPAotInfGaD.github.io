@@ -22,15 +22,14 @@ app.use((req, res, next) => {
 
 // Лимит запросов: на скоко блок, сколько макс запросов, что пишем
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: 60 * 1000,
+    max: 5,
     message: {
         error: 'Слишком много запросов, попробуйте позже'
     }
 });
 
 app.use(limiter);
-app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 // Валидация переменных окружения
@@ -186,7 +185,6 @@ app.get('/articles/:id', async (req, res) => {
 app.post('/articles', async (req, res) => {
     try {
         const { title, content, image, sect } = req.body;
-        //const section = req.params.section;
 
         if (!['Prog', 'OSINT', 'Trol'].includes(sect)) {
             return res.status(400).json({ 
@@ -325,18 +323,7 @@ app.get('/health', async (req, res) => {
 
 // Обработка несуществующих маршрутов
 app.use('*', (req, res) => {
-    res.status(404).json({ 
-        error: 'Маршрут не найден',
-        availableEndpoints: [
-            'GET /articles/:section? - получить статьи раздела (Prog, OSINT, Trol)',
-            'GET /articles/:id - получить конкретную статью',
-            'POST /articles - создать статью в разделе',
-            'PATCH /articles/:section/:id - обновить статью',
-            'DELETE /articles/:section/:id - удалить статью',
-            'POST /auth/check-password - проверка пароля администратора',
-            'GET /health - проверка состояния сервера'
-        ]
-    });
+    res.status(404).json({ error: 'Маршрут не найден'});
 });
 
 // Обработка ошибок
@@ -345,10 +332,5 @@ app.use((error, req, res, next) => {
         error: 'Внутренняя ошибка сервера',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-});
-
-app.listen(PORT, () => {
-    console.log(`📍 Port: ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 module.exports = app;
