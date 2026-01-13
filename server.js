@@ -321,11 +321,6 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Обработка несуществующих маршрутов
-app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Маршрут не найден'});
-});
-
 // Обработка ошибок
 app.use((error, req, res, next) => {
     res.status(500).json({ 
