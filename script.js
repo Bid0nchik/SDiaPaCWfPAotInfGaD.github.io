@@ -366,15 +366,16 @@ async function saveArticle() {
             title: title,
             content: content,
             image: currentImage,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
         };
             let savedArticle;
             if (currentEditingArticleId) {
                 // Обновление существующей статьи
-                savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
+                savedArticle = await updateArticleOnServer(section, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
-                savedArticle = await saveArticleToServer(select, articleData);
+                articleData.sect = section;
+                savedArticle = await saveArticleToServer(articleData);
             }
         await loadArticlesFromServer(select);
         goToHome();
@@ -387,8 +388,8 @@ async function saveArticle() {
 }
 
 // Сохранение статьи на сервер
-async function saveArticleToServer(section, articleData) {
-    const response = await fetch(`${API_URL}/articles/${section}`, {
+async function saveArticleToServer(articleData) {
+    const response = await fetch(`${API_URL}/articles`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -441,7 +442,7 @@ async function deleteArticle(articleId) {
 
 // Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+    const response = await fetch(`${API_URL}/articles/${articleId}`, {
         method: 'DELETE'
     });
 

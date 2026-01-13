@@ -183,12 +183,12 @@ app.get('/articles/:id', async (req, res) => {
 });
 
 // POST /articles - создать статью
-app.post('/articles/:section', async (req, res) => {
+app.post('/articles', async (req, res) => {
     try {
-        const { title, content, image } = req.body;
-        const section = req.params.section;
+        const { title, content, image, sect } = req.body;
+        //const section = req.params.section;
 
-        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
+        if (!['Prog', 'OSINT', 'Trol'].includes(sect)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
             });
@@ -203,13 +203,14 @@ app.post('/articles/:section', async (req, res) => {
         }
 
         const articleData = {
-            title: title.trim(),
-            content: content.trim(),
+            title: title,
+            content: content,
             image: image || null,
             date: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            sect: sect
         };
-        const docRef = await db.collection(section).add(articleData);
+        const docRef = await db.collection(sect).add(articleData);
         
         const responseArticle = {
             id: docRef.id,
@@ -227,7 +228,7 @@ app.post('/articles/:section', async (req, res) => {
 // PATCH /articles/:id - обновить статью
 app.patch('/articles/:section/:id', async (req, res) => {
     try {
-        const { title, content, image } = req.body;
+        const { title, content, image, sect } = req.body;
         const section = req.params.section;
         const arcticleID = req.params.id;
 
@@ -236,12 +237,6 @@ app.patch('/articles/:section/:id', async (req, res) => {
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
             });
         }
-        const doc = await db.collection(section).doc(arcticleID).get();
-        if (!doc.exists) {
-            console.log(section, arcticleID);
-            return res.status(404).json({ error: 'Статья не найдена' });
-        }
-
         const validationErrors = validateArticleData({ title, content, image }, true);
         if (validationErrors.length > 0) {
             return res.status(400).json({ 
@@ -249,22 +244,30 @@ app.patch('/articles/:section/:id', async (req, res) => {
                 details: validationErrors
             });
         }
+        
+        const doc = await db.collection(sect).doc(arcticleID).get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Статья не найдена' });
+        }
 
         const updateData = {
             updatedAt: new Date().toISOString()
         };
         
-        if (title !== undefined) updateData.title = title.trim();
-        if (content !== undefined) updateData.content = content.trim();
+        if (title !== undefined) updateData.title = title;
+        if (content !== undefined) updateData.content = content;
         if (image !== undefined) updateData.image = image;
+        if (section !== undefined) updateData.sect = section;
 
-        await db.collection(section).doc(arcticleID).update(updateData);
-        
-        const updatedDoc = await db.collection(section).doc(arcticleID).get();
+        const docRef = await db.collection(section).add(updateData);
+        const newId = docRef.id;
+
+        const updatedDoc = await db.collection(section).doc(newId).get();
         const updatedArticle = {
             id: updatedDoc.id,
             ...updatedDoc.data()
         };
+        await db.collection(sect).doc(arcticleID).delete();
         res.json(updatedArticle);
     } catch (error) {
         res.status(500).json({ 
