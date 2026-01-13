@@ -329,8 +329,8 @@ app.use('*', (req, res) => {
         error: 'Маршрут не найден',
         availableEndpoints: [
             'GET /articles/:section? - получить статьи раздела (Prog, OSINT, Trol)',
-            'GET /articles/:section/:id - получить конкретную статью',
-            'POST /articles/:section - создать статью в разделе',
+            'GET /articles/:id - получить конкретную статью',
+            'POST /articles - создать статью в разделе',
             'PATCH /articles/:section/:id - обновить статью',
             'DELETE /articles/:section/:id - удалить статью',
             'POST /auth/check-password - проверка пароля администратора',
