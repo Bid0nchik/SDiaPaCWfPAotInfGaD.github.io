@@ -238,6 +238,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
         }
         const doc = await db.collection(section).doc(arcticleID).get();
         if (!doc.exists) {
+            console.log(section, arcticleID);
             return res.status(404).json({ error: 'Статья не найдена' });
         }
 
@@ -347,6 +348,4 @@ app.listen(PORT, () => {
     console.log(`📍 Port: ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
-
 module.exports = app;
-
