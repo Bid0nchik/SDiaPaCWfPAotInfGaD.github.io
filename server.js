@@ -139,6 +139,11 @@ function validateArticleData(articleData, isUpdate = false) {
 app.get('/:section', async (req, res) => {
     try {
         let section = req.params.section;
+        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
+            return res.status(400).json({ 
+                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
+            });
+        }
         let query = db.collection(section);
         const snapshot = await query
             .orderBy('date', 'desc')
@@ -153,29 +158,6 @@ app.get('/:section', async (req, res) => {
     } catch (error) {
         res.status(500).json({ 
             error: 'Не удалось загрузить статьи',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
-// GET /articles/:id - получить конкретную статью
-app.get('/articles/:id', async (req, res) => {
-    try {
-        const doc = await db.collection('articles').doc(req.params.id).get();
-        
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Статья не найдена' });
-        }
-        
-        const article = {
-            id: doc.id,
-            ...doc.data()
-        };
-        
-        res.json(article);
-    } catch (error) {
-        res.status(500).json({ 
-            error: 'Не удалось загрузить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
@@ -326,7 +308,6 @@ app.use('*', (req, res)=>{
         error: 'Маршрут не найден',
         availableEndpoints: [
             'GET /articles/:section? - получить статьи раздела (Prog, OSINT, Trol)',
-            'GET /articles/:id - получить конкретную статью',
             'POST /articles - создать статью в разделе',
             'PATCH /articles/:section/:id - обновить статью',
             'DELETE /articles/:section/:id - удалить статью',
