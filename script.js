@@ -428,7 +428,7 @@ async function deleteArticle(section, articleId) {
     }
     try {
         await deleteArticleFromServer(section, articleId);
-        await loadArticlesFromServer();
+        await loadArticlesFromServer(section);
         goToHome();
     } catch (error) {
         alert(`Не удалось удалить статью: ${error.message}`);
