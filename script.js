@@ -427,7 +427,7 @@ async function deleteArticle(section, articleId) {
         return;
     }
     try {
-        const article = articles.find(a => a.id === articleId);
+        const article = await fetch(`${API_URL}/articles/getart/${articleId}`)
         if (!article) {
             alert('Статья не найдена!');
             return;
