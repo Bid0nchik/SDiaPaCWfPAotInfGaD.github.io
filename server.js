@@ -321,6 +321,20 @@ app.get('/health', async (req, res) => {
     }
 });
 
+app.use('*', (req, res)=>{
+    res.status(404).json({
+        error: 'Маршрут не найден',
+        availableEndpoints: [
+            'GET /articles/:section? - получить статьи раздела (Prog, OSINT, Trol)',
+            'GET /articles/:id - получить конкретную статью',
+            'POST /articles - создать статью в разделе',
+            'PATCH /articles/:section/:id - обновить статью',
+            'DELETE /articles/:section/:id - удалить статью',
+            'POST /auth/check-password - проверка пароля администратора',
+            'GET /health - проверка состояния сервера'
+        ]})
+});
+
 // Обработка ошибок
 app.use((error, req, res, next) => {
     res.status(500).json({ 
