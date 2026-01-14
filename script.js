@@ -481,7 +481,7 @@ function viewArticle(section, articleId) {
                 <button class="btn btn-primary" onclick="editArticle('${article.id}')">
                     Редактировать статью
                 </button>
-                <button class="btn btn-danger" onclick="deleteArticle('${section},${article.id}')">
+                <button class="btn btn-danger" onclick="deleteArticle('${section}','${article.id}')">
                     Удалить статью
                 </button>
             </div>
