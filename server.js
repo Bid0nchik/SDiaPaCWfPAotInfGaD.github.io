@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 // Лимит запросов: на скоко блок, сколько макс запросов, что пишем
 const limiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 5,
+    max: 30,
     message: {
         error: 'Слишком много запросов, попробуйте позже'
     }
@@ -262,7 +262,7 @@ app.delete('/articles/:section/:id', async (req, res) => {
     try {
         const section = req.params.section;
         const articleId = req.params.id;
-        
+        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
@@ -290,7 +290,7 @@ app.get('/articles/getart/:id', async (req, res)=>{
     }catch(error){
         res.status(500).json({
             error:'Не удалось получить статью'
-        })
+        });
     }
 });
 
