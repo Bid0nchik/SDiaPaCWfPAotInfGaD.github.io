@@ -166,7 +166,7 @@ async function loadArticlesFromServer(section) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
         articles = await response.json(); // записываем массив статей в массив парся json
-        renderArticles();  
+        renderArticles(section);  
     } catch (error) {
         showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
     } finally {
@@ -175,7 +175,7 @@ async function loadArticlesFromServer(section) {
 }
 
 // Отображение списка статей
-function renderArticles() {
+function renderArticles(section) {
     const container = document.getElementById('articlesContainer');
     if (articles.length === 0) {
         container.innerHTML = `
@@ -187,7 +187,7 @@ function renderArticles() {
     container.innerHTML = `
         <div class="section-articles">
             ${[...articles].map(article => `
-                <div class="article-card" onclick="viewArticle('${article.id}')">
+                <div class="article-card" onclick="viewArticle('${section}', '${article.id}')">
                     ${article.image ? `
                         <img src="${article.image}" alt="${article.title}" 
                              class="article-card-image" loading="lazy">
@@ -422,7 +422,7 @@ async function updateArticleOnServer(section, articleId, articleData) {
 }
 
 // Удаление статьи
-async function deleteArticle(articleId) {
+async function deleteArticle(section, articleId) {
     if (!confirm('Вы уверены, что хотите удалить эту статью? Это действие нельзя отменить.')) {
         return;
     }
@@ -432,7 +432,7 @@ async function deleteArticle(articleId) {
             alert('Статья не найдена!');
             return;
         }
-        await deleteArticleFromServer(articleId);
+        await deleteArticleFromServer(section, articleId);
         await loadArticlesFromServer();
         goToHome();
     } catch (error) {
@@ -441,8 +441,8 @@ async function deleteArticle(articleId) {
 }
 
 // Удаление статьи с сервера
-async function deleteArticleFromServer(articleId) {
-    const response = await fetch(`${API_URL}/articles/${articleId}`, {
+async function deleteArticleFromServer(section, articleId) {
+    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
         method: 'DELETE'
     });
 
@@ -453,7 +453,7 @@ async function deleteArticleFromServer(articleId) {
 }
 
 // Просмотр статьи
-function viewArticle(articleId) {
+function viewArticle(section, articleId) {
     const article = articles.find(a => a.id === articleId);
     if (!article) {
         alert('Статья не найдена!');
@@ -481,7 +481,7 @@ function viewArticle(articleId) {
                 <button class="btn btn-primary" onclick="editArticle('${article.id}')">
                     Редактировать статью
                 </button>
-                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
+                <button class="btn btn-danger" onclick="deleteArticle('${section},${article.id}')">
                     Удалить статью
                 </button>
             </div>
@@ -504,7 +504,6 @@ function editArticle(articleId) {
     }
 
     currentEditingArticleId = articleId;
-    currentSection = article.section;
 
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articleEditor').classList.remove('hidden');
