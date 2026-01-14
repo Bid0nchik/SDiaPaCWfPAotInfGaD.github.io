@@ -33,7 +33,7 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 
 // Валидация переменных окружения
-const requiredEnvVars = [
+/*const requiredEnvVars = [
     'FIREBASE_PROJECT_ID',
     'FIREBASE_PRIVATE_KEY_ID',
     'FIREBASE_PRIVATE_KEY',
@@ -48,7 +48,7 @@ for (const envVar of requiredEnvVars) {
         console.error(`❌ Отсутствует обязательная переменная окружения: ${envVar}`);
         process.exit(1);
     }
-}
+}*/
 
 // Firebase Admin инициализация
 const serviceAccount = {
