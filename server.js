@@ -323,4 +323,7 @@ app.use((error, req, res, next) => {
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
 });
+app.listen(PORT, ()=>{
+    console.log("Пуск")
+});
 module.exports = app;
