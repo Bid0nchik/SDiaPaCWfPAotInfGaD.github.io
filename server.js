@@ -282,6 +282,18 @@ app.delete('/articles/:section/:id', async (req, res) => {
     }
 });
 
+app.get('/articles/getart/:id', async (req, res)=>{
+    try{
+        const articleID = req.params.id;
+        const article = await db.collection(section).doc(articleID).get();
+        return article;
+    }catch(error){
+        res.status(500).json({
+            error:'Не удалось получить статью'
+        })
+    }
+});
+
 // Health check
 app.get('/health', async (req, res) => {
     try {
