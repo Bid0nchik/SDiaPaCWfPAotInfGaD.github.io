@@ -167,7 +167,7 @@ app.get('/:section', async (req, res) => {
 app.post('/articles', async (req, res) => {
     try {
         const { title, content, image, sect } = req.body;
-
+        console.log(`Было(backnew)${sect}`);
         if (!['Prog', 'OSINT', 'Trol'].includes(sect)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
