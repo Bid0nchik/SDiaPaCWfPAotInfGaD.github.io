@@ -371,10 +371,12 @@ async function saveArticle() {
             let savedArticle;
             if (currentEditingArticleId) {
                 // Обновление существующей статьи
+                 console.log(`Будет${select}, Было(frontupd)${articleData.sect}`);
                 savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
                 articleData.sect = select;
+                 console.log(`Будет${select}, Было(front(newart))${articleData.sect}`);
                 savedArticle = await saveArticleToServer(articleData);
             }
         await loadArticlesFromServer(select);
