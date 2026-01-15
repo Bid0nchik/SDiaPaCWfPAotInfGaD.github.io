@@ -167,7 +167,6 @@ app.get('/:section', async (req, res) => {
 app.post('/articles', async (req, res) => {
     try {
         const { title, content, image, sect } = req.body;
-        console.log(`Было(backnew)${sect}`);
         if (!['Prog', 'OSINT', 'Trol'].includes(sect)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
@@ -190,6 +189,7 @@ app.post('/articles', async (req, res) => {
             updatedAt: new Date().toISOString(),
             sect: sect
         };
+        console.log(articleData.sect);
         const docRef = await db.collection(sect).add(articleData);
         
         const responseArticle = {
@@ -211,7 +211,6 @@ app.patch('/articles/:section/:id', async (req, res) => {
         const { title, content, image, sect } = req.body;
         const section = req.params.section;
         const arcticleID = req.params.id;
-        console.log(`Будет${section}, Было(back)${sect}`);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
