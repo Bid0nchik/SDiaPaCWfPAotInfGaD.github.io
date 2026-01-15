@@ -211,7 +211,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
         const { title, content, image, sect } = req.body;
         const section = req.params.section;
         const arcticleID = req.params.id;
-
+        console.log(section, sect);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
@@ -262,7 +262,6 @@ app.delete('/articles/:section/:id', async (req, res) => {
     try {
         const section = req.params.section;
         const articleId = req.params.id;
-        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
@@ -278,18 +277,6 @@ app.delete('/articles/:section/:id', async (req, res) => {
         res.status(500).json({ 
             error: 'Не удалось удалить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
-app.get('/articles/getart/:id', async (req, res)=>{
-    try{
-        const articleID = req.params.id;
-        const article = await db.collection(section).doc(articleID).get();
-        return article;
-    }catch(error){
-        res.status(500).json({
-            error:'Не удалось получить статью'
         });
     }
 });
