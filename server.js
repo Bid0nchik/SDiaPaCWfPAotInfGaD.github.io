@@ -211,7 +211,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
         const { title, content, image, sect } = req.body;
         const section = req.params.section;
         const arcticleID = req.params.id;
-        console.log(section, sect);
+        console.log(`Будет${section}, Было(back)${sect}`);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
