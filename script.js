@@ -373,7 +373,8 @@ async function saveArticle() {
                 // Обновление существующей статьи
                 const article = articles.find(a => a.id === currentEditingArticleId);
                 console.log(article.sect);
-                savedArticle = await updateArticleOnServer(article.sect, currentEditingArticleId, articleData);
+                articleData.sect = article.sect;
+                savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
                 articleData.sect = select;
