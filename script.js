@@ -167,7 +167,7 @@ async function loadArticlesFromServer(section) {
         }
         articles = await response.json(); // записываем массив статей в массив парся json
         renderArticles();  
-    } catch (error) {
+    } catch (error) { 
         showError('Не удалось загрузить статьи. Проверьте подключение к серверу.');
     } finally {
         showLoading(false);
@@ -371,9 +371,6 @@ async function saveArticle() {
             let savedArticle;
             if (currentEditingArticleId) {
                 // Обновление существующей статьи
-                const article = articles.find(a => a.id === currentEditingArticleId);
-                console.log(article.sect);
-                articleData.sect = article.sect;
                 savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
@@ -409,6 +406,8 @@ async function saveArticleToServer(articleData) {
 
 // Обновление статьи на сервере
 async function updateArticleOnServer(section, articleId, articleData) {
+    const article = articles.find(a => a.id === articleId);
+    articleData.sect = article.sect;
     const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
         method: 'PATCH',
         headers: {
@@ -425,13 +424,16 @@ async function updateArticleOnServer(section, articleId, articleData) {
 }
 
 // Удаление статьи
-async function deleteArticle(section, articleId) {
+async function deleteArticle(articleId) {
     if (!confirm('Вы уверены, что хотите удалить эту статью? Это действие нельзя отменить.')) {
         return;
     }
     try {
-        await deleteArticleFromServer(section, articleId);
-        await loadArticlesFromServer(section);
+        const article = articles.find(a => a.id === articleId);
+        const section_delete = article.sect;
+
+        await deleteArticleFromServer(section_delete, articleId);
+        //await loadArticlesFromServer(section_delete);
         goToHome();
     } catch (error) {
         alert(`Не удалось удалить статью: ${error.message}`);
@@ -479,7 +481,7 @@ function viewArticle(articleId) {
                 <button class="btn btn-primary" onclick="editArticle('${article.id}')">
                     Редактировать статью
                 </button>
-                <button class="btn btn-danger" onclick="deleteArticle('${article.sect}', '${article.id}')">
+                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">
                     Удалить статью
                 </button>
             </div>
@@ -490,26 +492,22 @@ function viewArticle(articleId) {
 
 // Функция редактирования статьи
 function editArticle(articleId) {
-    if (currentMode !== 'admin') {
-        alert('Доступ запрещен! Требуются права администратора.');
-        return;
-    }
-
     const article = articles.find(a => a.id === articleId);
     if (!article) {
         alert('Статья не найдена!');
         return;
     }
-
     currentEditingArticleId = articleId;
-
+// открываем окно изменения
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('articleEditor').classList.remove('hidden');
     document.getElementById('hero-image').classList.add('hidden');
-
+// записываем значение заголовка, мэйн текста и тд в поля
     document.getElementById('articleTitle').value = article.title;
     document.getElementById('articleContent').value = article.content;
     document.getElementById('form-select').value = article.section;
+    document.getElementById('form-select').value = article.sect;
+
     const preview = document.getElementById('imagePreview');
     const removeBtn = document.getElementById('removeImageBtn');
     
