@@ -226,7 +226,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
                 details: validationErrors
             });
         }
-
+        console.log(oldSection, newSection, articleId);
         // Получаем текущую статью
         const oldDocRef = db.collection(oldSection).doc(articleId);
         const oldDoc = await oldDocRef.get();
