@@ -231,10 +231,6 @@ app.patch('/articles/:section/:id', async (req, res) => {
         const oldDocRef = db.collection(oldSection).doc(articleId);
         const oldDoc = oldDocRef.get();
 
-        if (!oldDoc.exists) {
-            return res.status(404).json({ error: 'Статья не найдена' });
-        }
-
         // Формируем обновлённые данные
         const updateData = {
             title: title || oldDoc.data().title,
