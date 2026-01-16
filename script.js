@@ -368,16 +368,15 @@ async function saveArticle() {
             image: currentImage,
             date: new Date().toISOString(),
         };
-            let savedArticle;
             if (currentEditingArticleId) {
                 // Обновление существующей статьи
-                savedArticle = await updateArticleOnServer(select, currentEditingArticleId, articleData);
+                await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
                 articleData.sect = select;
-                savedArticle = await saveArticleToServer(articleData);
+                await saveArticleToServer(articleData);
             }
-        await loadArticlesFromServer(select);
+        await loadArticlesFromServer(currentSection);
         goToHome();
     } catch (error) {
         alert(`Не удалось сохранить статью: ${error.message}`);
@@ -433,7 +432,7 @@ async function deleteArticle(articleId) {
         const section_delete = article.sect;
 
         await deleteArticleFromServer(section_delete, articleId);
-        //await loadArticlesFromServer(section_delete);
+        await loadArticlesFromServer(select);
         goToHome();
     } catch (error) {
         alert(`Не удалось удалить статью: ${error.message}`);
