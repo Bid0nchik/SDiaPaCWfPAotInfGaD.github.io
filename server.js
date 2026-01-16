@@ -229,7 +229,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
         console.log(oldSection, newSection, articleId);
         // Получаем текущую статью
         const oldDocRef = db.collection(oldSection).doc(articleId);
-        const oldDoc = await oldDocRef.get();
+        const oldDoc = oldDocRef.get();
 
         if (!oldDoc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
