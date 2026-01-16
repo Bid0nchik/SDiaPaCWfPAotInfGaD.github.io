@@ -189,7 +189,6 @@ app.post('/articles', async (req, res) => {
             updatedAt: new Date().toISOString(),
             sect: sect
         };
-        console.log(articleData.sect);
         const docRef = await db.collection(sect).add(articleData);
         
         const responseArticle = {
@@ -208,53 +207,77 @@ app.post('/articles', async (req, res) => {
 // PATCH /articles/:id - обновить статью
 app.patch('/articles/:section/:id', async (req, res) => {
     try {
-        const { title, content, image, sect } = req.body;
-        const section = req.params.section;
-        const arcticleID = req.params.id;
-        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-            return res.status(400).json({ 
+        const { title, content, image, sect: oldSection } = req.body;
+        const newSection = req.params.section;
+        const articleId = req.params.id;
+
+        // Проверка корректности раздела
+        if (!['Prog', 'OSINT', 'Trol'].includes(oldSection) || !['Prog', 'OSINT', 'Trol'].includes(newSection)) {
+            return res.status(400).json({
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
             });
         }
+
+        // Валидация данных статьи
         const validationErrors = validateArticleData({ title, content, image }, true);
         if (validationErrors.length > 0) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'Неверные данные',
                 details: validationErrors
             });
         }
-        
-        const doc = await db.collection(sect).doc(arcticleID).get();
-        if (!doc.exists) {
+
+        // Получаем текущую статью
+        const oldDocRef = db.collection(oldSection).doc(articleId);
+        const oldDoc = await oldDocRef.get();
+
+        if (!oldDoc.exists) {
             return res.status(404).json({ error: 'Статья не найдена' });
         }
 
+        // Формируем обновлённые данные
         const updateData = {
+            title: title || oldDoc.data().title,
+            content: content || oldDoc.data().content,
+            image: image !== undefined ? image : oldDoc.data().image,
+            sect: newSection,
             updatedAt: new Date().toISOString()
         };
-        
-        if (title !== undefined) updateData.title = title;
-        if (content !== undefined) updateData.content = content;
-        if (image !== undefined) updateData.image = image;
-        if (section !== undefined) updateData.sect = section;
 
-        const docRef = await db.collection(section).add(updateData);
-        const newId = docRef.id;
+        // Если раздел изменился, переносим статью
+        if (oldSection !== newSection) {
+            // Создаём новый документ в новой коллекции
+            const newDocRef = await db.collection(newSection).add(updateData);
+            const newDoc = await newDocRef.get();
 
-        const updatedDoc = await db.collection(section).doc(newId).get();
-        const updatedArticle = {
-            id: updatedDoc.id,
-            ...updatedDoc.data()
-        };
-        await db.collection(sect).doc(arcticleID).delete();
+            // Удаляем старый документ
+            await oldDocRef.delete();
+
+            // Возвращаем обновлённую статью с новым ID
+            const updatedArticle = {
+                id: newDoc.id,
+                ...newDoc.data()
+            };
+        } else {
+            // Если раздел не изменился, просто обновляем статью
+            await oldDocRef.update(updateData);
+
+            // Возвращаем обновлённую статью с тем же ID
+            const updatedDoc = await oldDocRef.get();
+            const updatedArticle = {
+                id: updatedDoc.id,
+                ...updatedDoc.data()
+            };
+        }
         res.json(updatedArticle);
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Не удалось обновить статью',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
+
 
 // DELETE /articles/:section/:id - удалить статью из раздела
 app.delete('/articles/:section/:id', async (req, res) => {
@@ -309,7 +332,5 @@ app.use((error, req, res, next) => {
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
 });
-app.listen(PORT, ()=>{
-    console.log("Пуск")
-});
+app.listen(PORT);
 module.exports = app;
