@@ -168,6 +168,7 @@ app.post('/articles/:section', async (req, res) => {
     try {
         const { title, content, image } = req.body;
         const section = req.params.section;
+        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
@@ -211,7 +212,7 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
         const oldSection = req.params.oldSection;
         const newSection = req.params.newSection;
         const articleId = req.params.id;
-
+        console.log(oldSection, newSection, articleId);
         // Проверка корректности раздела
         if (!['Prog', 'OSINT', 'Trol'].includes(oldSection) || !['Prog', 'OSINT', 'Trol'].includes(newSection)) {
             return res.status(400).json({
@@ -226,8 +227,6 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
                 details: validationErrors
             });
         }
-
-        console.log(oldSection, newSection, articleId);
         // Получаем текущую статью
         const oldDocRef = await db.collection(oldSection).doc(articleId);
         const oldDoc = await oldDocRef.get();
@@ -281,6 +280,7 @@ app.delete('/articles/:section/:id', async (req, res) => {
     try {
         const section = req.params.section;
         const articleId = req.params.id;
+        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
