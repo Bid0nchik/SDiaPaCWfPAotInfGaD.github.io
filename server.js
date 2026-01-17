@@ -229,15 +229,14 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
 
         console.log(oldSection, newSection, articleId);
         // Получаем текущую статью
-        const oldDocRef = db.collection(oldSection).doc(articleId);
-        const oldDoc = oldDocRef.get();
+        const oldDocRef = await db.collection(oldSection).doc(articleId);
+        const oldDoc = await oldDocRef.get();
 
         // Формируем обновлённые данные
         const updateData = {
             title: title || oldDoc.data().title,
             content: content || oldDoc.data().content,
             image: image !== undefined ? image : oldDoc.data().image,
-            sect: newSection,
             updatedAt: new Date().toISOString()
         };
 
@@ -255,6 +254,7 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
                 id: newDoc.id,
                 ...newDoc.data()
             };
+            res.json(updatedArticle);
         } else {
             // Если раздел не изменился, просто обновляем статью
             await oldDocRef.update(updateData);
@@ -265,8 +265,8 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
                 id: updatedDoc.id,
                 ...updatedDoc.data()
             };
+            res.json(updatedArticle);
         }
-        res.json(updatedArticle);
     } catch (error) {
         res.status(500).json({
             error: 'Не удалось обновить статью',
