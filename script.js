@@ -373,7 +373,7 @@ async function saveArticle() {
                 await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
-                await saveArticleToServer(articleData);
+                await saveArticleToServer(select, articleData);
             }
         await loadArticlesFromServer();
         goToHome();
@@ -386,8 +386,7 @@ async function saveArticle() {
 }
 
 // Сохранение статьи на сервер
-async function saveArticleToServer(articleData) {
-    const section = currentSection;
+async function saveArticleToServer(section, articleData) {
     const response = await fetch(`${API_URL}/articles/${section}`, {
         method: 'POST',
         headers: {
