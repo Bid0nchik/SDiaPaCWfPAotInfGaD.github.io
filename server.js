@@ -164,10 +164,11 @@ app.get('/:section', async (req, res) => {
 });
 
 // POST /articles - создать статью
-app.post('/articles', async (req, res) => {
+app.post('/articles/:section', async (req, res) => {
     try {
-        const { title, content, image, sect } = req.body;
-        if (!['Prog', 'OSINT', 'Trol'].includes(sect)) {
+        const { title, content, image } = req.body;
+        const section = req.params.section;
+        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
             });
@@ -186,10 +187,9 @@ app.post('/articles', async (req, res) => {
             content: content,
             image: image || null,
             date: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            sect: sect
+            updatedAt: new Date().toISOString()
         };
-        const docRef = await db.collection(sect).add(articleData);
+        const docRef = await db.collection(section).add(articleData);
         
         const responseArticle = {
             id: docRef.id,
@@ -205,10 +205,11 @@ app.post('/articles', async (req, res) => {
 });
 
 // PATCH /articles/:id - обновить статью
-app.patch('/articles/:section/:id', async (req, res) => {
+app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
     try {
-        const { title, content, image, sect: oldSection } = req.body;
-        const newSection = req.params.section;
+        const { title, content, image } = req.body;
+        const oldSection = req.params.oldsection;
+        const newSection = req.params.newsection;
         const articleId = req.params.id;
 
         // Проверка корректности раздела
@@ -217,7 +218,6 @@ app.patch('/articles/:section/:id', async (req, res) => {
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
             });
         }
-
         // Валидация данных статьи
         const validationErrors = validateArticleData({ title, content, image }, true);
         if (validationErrors.length > 0) {
@@ -226,6 +226,7 @@ app.patch('/articles/:section/:id', async (req, res) => {
                 details: validationErrors
             });
         }
+
         console.log(oldSection, newSection, articleId);
         // Получаем текущую статью
         const oldDocRef = db.collection(oldSection).doc(articleId);
