@@ -158,10 +158,10 @@ function logout() {
 }
 
 // Загрузка статей с сервера
-async function loadArticlesFromServer(section) {
+async function loadArticlesFromServer() {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-        const response = await fetch(`${API_URL}/${section}`);
+        const response = await fetch(`${API_URL}/${currentSection}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
@@ -373,10 +373,9 @@ async function saveArticle() {
                 await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
                 // Создание новой статьи
-                articleData.sect = select;
                 await saveArticleToServer(articleData);
             }
-        await loadArticlesFromServer(currentSection);
+        await loadArticlesFromServer();
         goToHome();
     } catch (error) {
         alert(`Не удалось сохранить статью: ${error.message}`);
@@ -388,7 +387,7 @@ async function saveArticle() {
 
 // Сохранение статьи на сервер
 async function saveArticleToServer(articleData) {
-    const response = await fetch(`${API_URL}/articles`, {
+    const response = await fetch(`${API_URL}/articles/${currentSection}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -407,7 +406,7 @@ async function saveArticleToServer(articleData) {
 async function updateArticleOnServer(section, articleId, articleData) {
     const article = articles.find(a => a.id === articleId);
     articleData.sect = article.sect;
-    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+    const response = await fetch(`${API_URL}/articles/${section}/${currentSection}/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
