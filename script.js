@@ -387,8 +387,8 @@ async function saveArticle() {
 
 // Сохранение статьи на сервер
 async function saveArticleToServer(articleData) {
-    alert(currentSection);
-    const response = await fetch(`${API_URL}/articles/${currentSection}`, {
+    const section = currentSection;
+    const response = await fetch(`${API_URL}/articles/${section}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -404,9 +404,9 @@ async function saveArticleToServer(articleData) {
 }
 
 // Обновление статьи на сервере
-async function updateArticleOnServer(section, articleId, articleData) {
-    console.log(currentSection);
-    const response = await fetch(`${API_URL}/articles/${section}/${currentSection}/${articleId}`, {
+async function updateArticleOnServer(newSection, articleId, articleData) {
+    const oldSection = currentSection;
+    const response = await fetch(`${API_URL}/articles/${newSection}/${oldSection}/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -437,8 +437,8 @@ async function deleteArticle(articleId) {
 
 // Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
-    console.log(currentSection);
-    const response = await fetch(`${API_URL}/articles/${currentSection}/${articleId}`, {
+    const section = currentSection;
+    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
         method: 'DELETE'
     });
 
