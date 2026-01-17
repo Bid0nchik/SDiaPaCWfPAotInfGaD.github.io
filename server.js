@@ -208,8 +208,8 @@ app.post('/articles/:section', async (req, res) => {
 app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
     try {
         const { title, content, image } = req.body;
-        const oldSection = req.params.oldsection;
-        const newSection = req.params.newsection;
+        const oldSection = req.params.oldSection;
+        const newSection = req.params.newSection;
         const articleId = req.params.id;
 
         // Проверка корректности раздела
