@@ -387,6 +387,7 @@ async function saveArticle() {
 
 // Сохранение статьи на сервер
 async function saveArticleToServer(articleData) {
+    console.log(currentSection);
     const response = await fetch(`${API_URL}/articles/${currentSection}`, {
         method: 'POST',
         headers: {
@@ -404,8 +405,7 @@ async function saveArticleToServer(articleData) {
 
 // Обновление статьи на сервере
 async function updateArticleOnServer(section, articleId, articleData) {
-    const article = articles.find(a => a.id === articleId);
-    articleData.sect = article.sect;
+    console.log(currentSection);
     const response = await fetch(`${API_URL}/articles/${section}/${currentSection}/${articleId}`, {
         method: 'PATCH',
         headers: {
@@ -428,7 +428,7 @@ async function deleteArticle(articleId) {
     }
     try {
         await deleteArticleFromServer(articleId);
-        await loadArticlesFromServer(select);
+        await loadArticlesFromServer();
         goToHome();
     } catch (error) {
         alert(`Не удалось удалить статью: ${error.message}`);
@@ -437,6 +437,7 @@ async function deleteArticle(articleId) {
 
 // Удаление статьи с сервера
 async function deleteArticleFromServer(articleId) {
+    console.log(currentSection);
     const response = await fetch(`${API_URL}/articles/${currentSection}/${articleId}`, {
         method: 'DELETE'
     });
@@ -551,17 +552,17 @@ function toggleTheme() {
 
 function LoadSectionProgramm(){
    RemoveSelections();
-   currentSection = 'Prog'
+   currentSection = 'Prog';
     loadArticlesFromServer('Prog');
 }
 function LoadSectionOsint(){
     RemoveSelections();
-    currentSection = 'OSINT'
+    currentSection = 'OSINT';
     loadArticlesFromServer('OSINT');
 }
 function LoadSectionTroll(){
     RemoveSelections();
-    currentSection = 'Trol'
+    currentSection = 'Trol';
     loadArticlesFromServer('Trol');
 }
 
