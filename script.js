@@ -427,10 +427,7 @@ async function deleteArticle(articleId) {
         return;
     }
     try {
-        const article = articles.find(a => a.id === articleId);
-        const section_delete = article.sect;
-
-        await deleteArticleFromServer(section_delete, articleId);
+        await deleteArticleFromServer(articleId);
         await loadArticlesFromServer(select);
         goToHome();
     } catch (error) {
@@ -439,8 +436,8 @@ async function deleteArticle(articleId) {
 }
 
 // Удаление статьи с сервера
-async function deleteArticleFromServer(section, articleId) {
-    const response = await fetch(`${API_URL}/articles/${section}/${articleId}`, {
+async function deleteArticleFromServer(articleId) {
+    const response = await fetch(`${API_URL}/articles/${currentSection}/${articleId}`, {
         method: 'DELETE'
     });
 
@@ -504,7 +501,7 @@ function editArticle(articleId) {
     document.getElementById('articleTitle').value = article.title;
     document.getElementById('articleContent').value = article.content;
     document.getElementById('form-select').value = article.section;
-    document.getElementById('form-select').value = article.sect;
+    document.getElementById('form-select').value = currentSection;
 
     const preview = document.getElementById('imagePreview');
     const removeBtn = document.getElementById('removeImageBtn');
