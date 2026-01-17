@@ -387,7 +387,7 @@ async function saveArticle() {
 
 // Сохранение статьи на сервер
 async function saveArticleToServer(articleData) {
-    console.log(currentSection);
+    alert(currentSection);
     const response = await fetch(`${API_URL}/articles/${currentSection}`, {
         method: 'POST',
         headers: {
