@@ -501,7 +501,6 @@ function editArticle(articleId) {
 // записываем значение заголовка, мэйн текста и тд в поля
     document.getElementById('articleTitle').value = article.title;
     document.getElementById('articleContent').value = article.content;
-    document.getElementById('form-select').value = article.section;
     document.getElementById('form-select').value = currentSection;
 
     const preview = document.getElementById('imagePreview');
@@ -551,19 +550,19 @@ function toggleTheme() {
 }
 
 function LoadSectionProgramm(){
-   RemoveSelections();
-   currentSection = 'Prog';
-    loadArticlesFromServer('Prog');
+    RemoveSelections();
+    currentSection = 'Prog';
+    loadArticlesFromServer();
 }
 function LoadSectionOsint(){
     RemoveSelections();
     currentSection = 'OSINT';
-    loadArticlesFromServer('OSINT');
+    loadArticlesFromServer();
 }
 function LoadSectionTroll(){
     RemoveSelections();
     currentSection = 'Trol';
-    loadArticlesFromServer('Trol');
+    loadArticlesFromServer();
 }
 
 function RemoveSelections(){
