@@ -266,7 +266,7 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
 });
 
  
-app.use('/', delete_art);
+app.use('/', delete_art(db));
 
 // Health check
 app.get('/health', async (req, res) => {
