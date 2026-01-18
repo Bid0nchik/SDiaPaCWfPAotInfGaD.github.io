@@ -168,7 +168,6 @@ app.post('/articles/:section', async (req, res) => {
     try {
         const { title, content, image } = req.body;
         const section = req.params.section;
-        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
@@ -228,31 +227,26 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
             });
         }
         // Получаем текущую статью
-        const oldDocRef = await db.collection(oldSection).doc(articleId);
-        const oldDoc = await oldDocRef.get();
+        const oldDocRef = db.collection(oldSection).doc(articleId);
 
         // Формируем обновлённые данные
         const updateData = {
-            title: title || oldDoc.data().title,
-            content: content || oldDoc.data().content,
-            image: image !== undefined ? image : oldDoc.data().image,
+            title: title,
+            content: content,
+            image: image,
             updatedAt: new Date().toISOString()
         };
 
-        // Если раздел изменился, переносим статью
         if (oldSection !== newSection) {
-            // Создаём новый документ в новой коллекции
             const newDocRef = await db.collection(newSection).add(updateData);
             const newDoc = await newDocRef.get();
-
-            // Удаляем старый документ
             await oldDocRef.delete();
 
-            // Возвращаем обновлённую статью с новым ID
             const updatedArticle = {
                 id: newDoc.id,
                 ...newDoc.data()
             };
+            console.log(articleId, newDoc.id);
             res.json(updatedArticle);
         } else {
             // Если раздел не изменился, просто обновляем статью
@@ -280,7 +274,6 @@ app.delete('/articles/:section/:id', async (req, res) => {
     try {
         const section = req.params.section;
         const articleId = req.params.id;
-        console.log(section);
         if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
             return res.status(400).json({ 
                 error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
