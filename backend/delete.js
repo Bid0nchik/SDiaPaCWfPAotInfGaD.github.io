@@ -1,5 +1,6 @@
 const express = require('express'); 
 const router = express.Router(); 
+const admin = require('firebase-admin');
 const db = admin.firestore();
 
 router.delete('/articles/:section/:id', async (req, res) => {
