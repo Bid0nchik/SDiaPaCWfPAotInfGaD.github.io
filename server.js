@@ -153,7 +153,7 @@ app.get('/:section', async (req, res) => {
             id: doc.id,
             ...doc.data()
         }));
-        
+        console.log(articles);
         res.json(articles);
     } catch (error) {
         res.status(500).json({ 
