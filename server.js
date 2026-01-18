@@ -107,10 +107,10 @@ app.post('/auth/check-password', async (req, res) => {
     }
 })
 
-app.get('/articles', get_art);
-app.post('/articles', create_art);
-app.patch('/articles', update_art);
-app.delete('/articles', delete_art);
+app.use('/articles', get_art);
+app.use('/articles', create_art);
+app.use('/articles', update_art);
+app.use('/articles', delete_art);
 
 // Health check
 app.get('/health', async (req, res) => {
