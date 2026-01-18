@@ -357,7 +357,6 @@ async function saveArticle() {
         contentInput.focus();
         return;
     }
-
     saveButton.disabled = true;
     saveButton.textContent = 'Сохранение...';
 
@@ -369,10 +368,8 @@ async function saveArticle() {
             date: new Date().toISOString(),
         };
             if (currentEditingArticleId) {
-                // Обновление существующей статьи
                 await updateArticleOnServer(select, currentEditingArticleId, articleData);
             } else {
-                // Создание новой статьи
                 await saveArticleToServer(select, articleData);
             }
         await loadArticlesFromServer();
@@ -404,8 +401,7 @@ async function saveArticleToServer(section, articleData) {
 
 // Обновление статьи на сервере
 async function updateArticleOnServer(newSection, articleId, articleData) {
-    const oldSection = currentSection;
-    const response = await fetch(`${API_URL}/articles/${newSection}/${oldSection}/${articleId}`, {
+    const response = await fetch(`${API_URL}/articles/${newSection}/${currentSection}/${articleId}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -416,6 +412,9 @@ async function updateArticleOnServer(newSection, articleId, articleData) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }
+    if (currentSection != newSection){
+        currentSection = newSection;
     }
     return await response.json();
 }
