@@ -1,8 +1,9 @@
 const express = require('express'); 
 const router = express.Router(); 
+const validateSection = require('./routes/validSection');
 
 module.exports = function(db){
-    router.delete('/articles/:section/:id', async (req, res) => {
+    router.delete('/:section/:id', validateSection, async (req, res) => {
         try {
             const section = req.params.section;
             const articleId = req.params.id;

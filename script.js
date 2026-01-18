@@ -161,7 +161,7 @@ function logout() {
 async function loadArticlesFromServer() {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-        const response = await fetch(`${API_URL}/${currentSection}`);
+        const response = await fetch(`${API_URL}/articles/${currentSection}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }

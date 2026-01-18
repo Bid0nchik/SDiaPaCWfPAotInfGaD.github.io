@@ -73,8 +73,11 @@ try {
 }
 
 const db = admin.firestore();
-const delete_art = require('./backend/delete.js')(db);
 
+const get_art = require('./backend/get')(db);
+const create_art = require('./backend/create')(db);
+const update_art = require('./backend/update')(db);
+const delete_art = require('./backend/delete')(db);
 
 app.post('/auth/check-password', async (req, res) => {
     try {
@@ -102,172 +105,12 @@ app.post('/auth/check-password', async (req, res) => {
             error: 'Ошибка сервера' 
         });
     }
-});
+})
 
-// Валидация данных статьи
-function validateArticleData(articleData, isUpdate = false) {
-    const errors = [];
-    
-    if (!isUpdate || articleData.title !== undefined) {
-        const title = articleData.title?.trim();
-        if (!title) {
-            errors.push('Заголовок обязателен');
-        } else if (title.length > 200) {
-            errors.push('Заголовок не должен превышать 200 символов');
-        }
-    }
-    
-    if (!isUpdate || articleData.content !== undefined) {
-        const content = articleData.content?.trim();
-        if (!content) {
-            errors.push('Содержание обязательно');
-        } else if (content.length > 10000) {
-            errors.push('Содержание не должно превышать 10000 символов');
-        }
-    }
-    
-    if (articleData.image !== undefined && articleData.image !== null) {
-        if (!articleData.image.startsWith('data:image/')) {
-            errors.push('Неверный формат изображения');
-        } else if (articleData.image.length > 5 * 1024 * 1024) {
-            errors.push('Размер изображения слишком большой');
-        }
-    }
-    
-    return errors;
-}
-
-// GET /articles - получить все статьи (с фильтрацией по разделу)
-app.get('/:section', async (req, res) => {
-    try {
-        let section = req.params.section;
-        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-            return res.status(400).json({ 
-                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
-            });
-        }
-        let query = db.collection(section);
-        const snapshot = await query
-            .orderBy('date', 'desc')
-            .get();
-        const articles = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        res.json(articles);
-    } catch (error) {
-        res.status(500).json({ 
-            error: 'Не удалось загрузить статьи',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
-// POST /articles - создать статью
-app.post('/articles/:section', async (req, res) => {
-    try {
-        const { title, content, image } = req.body;
-        const section = req.params.section;
-        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-            return res.status(400).json({ 
-                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
-            });
-        }
-
-        const validationErrors = validateArticleData({ title, content, image });
-        if (validationErrors.length > 0) {
-            return res.status(400).json({ 
-                error: 'Неверные данные',
-                details: validationErrors
-            });
-        }
-
-        const articleData = {
-            title: title,
-            content: content,
-            image: image || null,
-            date: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-        const docRef = await db.collection(section).add(articleData);
-        
-        const responseArticle = {
-            id: docRef.id,
-            ...articleData
-        };
-        res.status(201).json(responseArticle);
-    } catch (error) {
-        res.status(500).json({ 
-            error: 'Не удалось создать статью',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
-// PATCH /articles/:id - обновить статью
-app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
-    try {
-        const { title, content, image } = req.body;
-        const oldSection = req.params.oldSection;
-        const newSection = req.params.newSection;
-        const articleId = req.params.id;
-        // Проверка корректности раздела
-        if (!['Prog', 'OSINT', 'Trol'].includes(oldSection) || !['Prog', 'OSINT', 'Trol'].includes(newSection)) {
-            return res.status(400).json({
-                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
-            });
-        }
-        // Валидация данных статьи
-        const validationErrors = validateArticleData({ title, content, image }, true);
-        if (validationErrors.length > 0) {
-            return res.status(400).json({
-                error: 'Неверные данные',
-                details: validationErrors
-            });
-        }
-        // Получаем текущую статью
-        const oldDocRef = db.collection(oldSection).doc(articleId);
-
-        // Формируем обновлённые данные
-        const updateData = {
-            title: title,
-            content: content,
-            image: image,
-            updatedAt: new Date().toISOString()
-        };
-
-        if (oldSection !== newSection) {
-            const newDocRef = await db.collection(newSection).add(updateData);
-            const newDoc = await newDocRef.get();
-            await oldDocRef.delete();
-
-            const updatedArticle = {
-                id: newDoc.id,
-                ...newDoc.data()
-            };
-            res.json(updatedArticle);
-        } else {
-            // Если раздел не изменился, просто обновляем статью
-            await oldDocRef.update(updateData);
-
-            // Возвращаем обновлённую статью с тем же ID
-            const updatedDoc = await oldDocRef.get();
-            const updatedArticle = {
-                id: updatedDoc.id,
-                ...updatedDoc.data()
-            };
-            res.json(updatedArticle);
-        }
-    } catch (error) {
-        res.status(500).json({
-            error: 'Не удалось обновить статью',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
- 
-app.use('/', delete_art);
+app.get('/articles', get_art);
+app.post('/articles', create_art);
+app.patch('/articles', update_art);
+app.delete('/articles', delete_art);
 
 // Health check
 app.get('/health', async (req, res) => {
