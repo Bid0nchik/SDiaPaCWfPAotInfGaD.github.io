@@ -369,6 +369,9 @@ async function saveArticle() {
         };
             if (currentEditingArticleId) {
                 await updateArticleOnServer(select, currentEditingArticleId, articleData);
+                if (currentSection != select){
+                    currentSection = select;
+                }
             } else {
                 await saveArticleToServer(select, articleData);
             }
@@ -412,9 +415,6 @@ async function updateArticleOnServer(newSection, articleId, articleData) {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-    }
-    if (currentSection != newSection){
-        currentSection = newSection;
     }
     return await response.json();
 }
