@@ -148,12 +148,11 @@ app.get('/:section', async (req, res) => {
         const snapshot = await query
             .orderBy('date', 'desc')
             .get();
-        
+        console.log(snapshot);
         const articles = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
-        console.log(articles);
         res.json(articles);
     } catch (error) {
         res.status(500).json({ 
