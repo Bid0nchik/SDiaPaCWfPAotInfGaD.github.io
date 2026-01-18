@@ -4,7 +4,7 @@ const cors = require('cors');
 const admin = require('firebase-admin');        
 const rateLimit = require('express-rate-limit');
 const PORT = process.env.PORT || 3001;
-const delete_art = require('./backend/delete.js')
+const delete_art = require('./backend/delete.js')(db);
 
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
@@ -266,7 +266,7 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
 });
 
  
-app.use('/', delete_art(db));
+app.use('/', delete_art);
 
 // Health check
 app.get('/health', async (req, res) => {
