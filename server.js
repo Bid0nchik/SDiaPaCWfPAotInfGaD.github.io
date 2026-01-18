@@ -1,10 +1,11 @@
-const cors = require('cors');                   // 
-const admin = require('firebase-admin');        // 
-const rateLimit = require('express-rate-limit');// 
+const express = require('express');  
+const app = express();  
+const cors = require('cors');                   
+const admin = require('firebase-admin');        
+const rateLimit = require('express-rate-limit');
 const PORT = process.env.PORT || 3001;
+const delete_art = require('./backend/delete.js')
 
-const express = require('express');             // создание фв express(из node)
-const app = express();      // создание приложения express
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -33,7 +34,7 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 
 // Валидация переменных окружения
-/*const requiredEnvVars = [
+const requiredEnvVars = [
     'FIREBASE_PROJECT_ID',
     'FIREBASE_PRIVATE_KEY_ID',
     'FIREBASE_PRIVATE_KEY',
@@ -48,7 +49,7 @@ for (const envVar of requiredEnvVars) {
         console.error(`❌ Отсутствует обязательная переменная окружения: ${envVar}`);
         process.exit(1);
     }
-}*/
+}
 
 // Firebase Admin инициализация
 const serviceAccount = {
@@ -148,7 +149,6 @@ app.get('/:section', async (req, res) => {
         const snapshot = await query
             .orderBy('date', 'desc')
             .get();
-        console.log(snapshot);
         const articles = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -210,7 +210,6 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
         const oldSection = req.params.oldSection;
         const newSection = req.params.newSection;
         const articleId = req.params.id;
-        console.log(oldSection, newSection, articleId);
         // Проверка корректности раздела
         if (!['Prog', 'OSINT', 'Trol'].includes(oldSection) || !['Prog', 'OSINT', 'Trol'].includes(newSection)) {
             return res.status(400).json({
@@ -245,7 +244,6 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
                 id: newDoc.id,
                 ...newDoc.data()
             };
-            console.log(articleId, newDoc.id);
             res.json(updatedArticle);
         } else {
             // Если раздел не изменился, просто обновляем статью
@@ -267,30 +265,8 @@ app.patch('/articles/:newSection/:oldSection/:id', async (req, res) => {
     }
 });
 
-
-// DELETE /articles/:section/:id - удалить статью из раздела
-app.delete('/articles/:section/:id', async (req, res) => {
-    try {
-        const section = req.params.section;
-        const articleId = req.params.id;
-        if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-            return res.status(400).json({ 
-                error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
-            });
-        }
-        const doc = await db.collection(section).doc(articleId).get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Статья не найдена' });
-        }
-        await db.collection(section).doc(articleId).delete();
-        res.status(204).send();
-    } catch (error) {
-        res.status(500).json({ 
-            error: 'Не удалось удалить статью',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
+ 
+app.use('/', delete_art);
 
 // Health check
 app.get('/health', async (req, res) => {
