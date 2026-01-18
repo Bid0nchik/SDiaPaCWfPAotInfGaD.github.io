@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { validateArticleData } = require('./routes/validate');
+const validateArticleData = require('./routes/validate');
 const validateSection = require('./routes/validSection');
 
 module.exports = function(db){
@@ -8,11 +8,13 @@ module.exports = function(db){
             try {
             const { title, content, image } = req.body;
             const section = req.params.section;
-            if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-                return res.status(400).json({ 
-                    error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
-                });
-            }
+            const articleData = {
+                title: title,
+                content: content,
+                image: image || null,
+                date: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
             const validate = validateArticleData(articleData, false);
             if (!validate.isValid) {
                 return res.status(400).json({
@@ -21,13 +23,6 @@ module.exports = function(db){
                 });
             }
 
-            const articleData = {
-                title: title,
-                content: content,
-                image: image || null,
-                date: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
             const docRef = await db.collection(section).add(articleData);
             
             const responseArticle = {

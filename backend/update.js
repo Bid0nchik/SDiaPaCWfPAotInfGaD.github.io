@@ -1,6 +1,6 @@
 const express = require('express'); 
 const router = express.Router(); 
-const { validateArticleData } = require('./routes/validate');
+const validateArticleData = require('./routes/validate');
 const validateSection = require('./routes/validSection');
 
 module.exports = function(db){
@@ -10,15 +10,6 @@ module.exports = function(db){
             const oldSection = req.params.oldSection;
             const newSection = req.params.newSection;
             const articleId = req.params.id;
-
-            const validate = validateArticleData(articleData, true);
-            if (!validate.isValid) {
-                return res.status(400).json({
-                    error: 'Неверные данные',
-                    details: validate.errors
-                });
-            }
-
             const oldDocRef = db.collection(oldSection).doc(articleId);
             const updateData = {
                 title: title,
@@ -26,7 +17,13 @@ module.exports = function(db){
                 image: image,
                 updatedAt: new Date().toISOString()
             };
-
+            const validate = validateArticleData(updateData, true);
+            if (!validate.isValid) {
+                return res.status(400).json({
+                    error: 'Неверные данные',
+                    details: validate.errors
+                });
+            }
             if (oldSection !== newSection) {
                 const newDocRef = await db.collection(newSection).add(updateData);
                 const newDoc = await newDocRef.get();

@@ -6,11 +6,6 @@ module.exports = function(db){
     router.get('/:section', validateSection, async (req, res) => {
         try {
             let section = req.params.section;
-            if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-                return res.status(400).json({ 
-                    error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol' 
-                });
-            }
             let query = db.collection(section);
             const snapshot = await query
                 .orderBy('date', 'desc')

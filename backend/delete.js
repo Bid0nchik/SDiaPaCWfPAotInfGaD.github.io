@@ -7,11 +7,6 @@ module.exports = function(db){
         try {
             const section = req.params.section;
             const articleId = req.params.id;
-            if (!['Prog', 'OSINT', 'Trol'].includes(section)) {
-                return res.status(400).json({ 
-                    error: 'Неверный раздел. Допустимые значения: Prog, OSINT, Trol'
-                });
-            }
             const doc = await db.collection(section).doc(articleId).get();
             if (!doc.exists) {
                 return res.status(404).json({ error: 'Статья не найдена' });

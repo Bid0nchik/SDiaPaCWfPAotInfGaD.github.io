@@ -26,7 +26,6 @@ module.exports = function validateArticleData(articleData, isUpdate = false) {
             errors.push('Размер изображения слишком большой');
         }
     }
-
     return {
         isValid: errors.length === 0,
         errors: errors
