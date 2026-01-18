@@ -5,7 +5,7 @@ const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
 const PORT = process.env.PORT || 3001;
 const delete_art = require('./backend/delete.js')(db);
-
+ 
 app.use(cors({
     origin: ['https://sdiapacwfpaotinfgad.github.io', 'https://bid0nchik.github.io'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -299,3 +299,4 @@ app.use((error, req, res, next) => {
 });
 app.listen(PORT);
 module.exports = app;
+
