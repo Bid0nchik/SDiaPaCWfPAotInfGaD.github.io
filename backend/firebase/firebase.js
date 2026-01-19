@@ -1,5 +1,4 @@
-module.exports = function(){
-    const requiredEnvVars = [
+const requiredEnvVars = [
         'FIREBASE_PROJECT_ID',
         'FIREBASE_PRIVATE_KEY_ID',
         'FIREBASE_PRIVATE_KEY',
@@ -8,11 +7,12 @@ module.exports = function(){
         'FIREBASE_CLIENT_CERT_URL',
         'ADMIN_PASSWORD'
     ];
-
+function checkEnv(){
     for (const envVar of requiredEnvVars) {
         if (!process.env[envVar]) {
-            console.error(`❌ Отсутствует обязательная переменная окружения: ${envVar}`);
+            console.error(`Отсутствует обязательная переменная окружения: ${envVar}`);
             process.exit(1);
         }
     }
 };
+module.exports = checkEnv;
