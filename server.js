@@ -8,7 +8,7 @@ const limiter = require('./backend/middleware/limiter');
 const cash = require('./backend/middleware/cash');
 
 const firebase_env = require('./backend/firebase/firebase');
-const serviceAccount = require('./backend/firebase/firebase_config.json');
+const serviceAccount = require('./backend/firebase/firebase_config');
 
 app.use(express.json({ limit: '10mb' }));
 
