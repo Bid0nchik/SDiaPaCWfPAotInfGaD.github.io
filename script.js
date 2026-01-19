@@ -133,6 +133,8 @@ function goToHome() {
     document.getElementById('hero-image').classList.remove('hidden');
     document.getElementById("selectionMenu").classList.remove('hidden');
     document.getElementById("articlesContainer").classList.add('hidden');
+    currentEditingArticleId = null;
+    currentSection = null;
 }
 function goToStat(){
     document.getElementById('articleView').classList.add('hidden');
@@ -372,8 +374,8 @@ async function saveArticle() {
 
             }else if(currentEditingArticleId && currentSection !== select) {
                 await saveArticleToServer(select, articleData);
-                await deleteArticle(currentEditingArticleId);
-                
+                await deleteArticleFromServer(currentEditingArticleId);
+
             } else {
                 await saveArticleToServer(select, articleData);
             }
@@ -519,19 +521,6 @@ function editArticle(articleId) {
     document.getElementById('editorTitle').textContent = 'Редактирование статьи';
     document.getElementById('saveButton').textContent = 'Сохранить изменения';
     document.getElementById('saveButton').disabled = false;
-}
-
-// Отмена редактирования
-function cancelEditing() {
-    const message = currentEditingArticleId ? // если он есть(он появляется ток когда редактируем) то пишем 1 сооб иначе 2
-        'Вы уверены, что хотите отменить редактирование? Все несохраненные изменения будут потеряны.' :
-        'Вы уверены, что хотите отменить создание статьи? Все несохраненные данные будут потеряны.';
-    
-    if (confirm(message)) { // confirm это чтоб был выбор в отличии от alert
-        document.getElementById('articleEditor').classList.add('hidden');
-        currentEditingArticleId = null;
-        goToHome();
-    }
 }
 
 // Функции для темы
