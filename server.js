@@ -10,10 +10,6 @@ const cash = require('./backend/middleware/cash');
 const firebase_env = require('./backend/firebase/firebase');
 const serviceAccount = require('./backend/firebase/firebase_config.json');
 
-//middleware
-app.use(cash);
-app.use(limiter);
-app.use(firebase_env);
 app.use(express.json({ limit: '10mb' }));
 
 app.use(cors({
@@ -22,6 +18,11 @@ app.use(cors({
     credentials: true
 }));
 app.options('*', cors());
+
+//middleware
+app.use(cash);
+app.use(limiter);
+firebase_env();
 
 // аутентификация
 try {
