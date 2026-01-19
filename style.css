@@ -134,13 +134,13 @@ body {
 
 
 [data-theme="light"] #SectProg{
-    content: url('images/SectProg_light_pc.png');
+    content: url('images/sections/SectProg_light_pc.png');
 }
 [data-theme="light"] #SectOsint{
-    content: url('images/SectOsint_light_pc.png');
+    content: url('images/sections/SectOsint_light_pc.png');
 }
 [data-theme="light"] #SectTroll{
-    content: url('images/Troll_light_pc.png.png');
+    content: url('images/sections/Troll_light_pc.png.png');
 }
 
 .article-card {
@@ -544,17 +544,17 @@ select option[value="empty"][disabled] {
 
 
 [data-theme="light"] .btn-image {
-    content: url('images/button_home_light.png');
+    content: url('images/buttons/button_home_light.png');
 }
 [data-theme="light"] .btn-image-enter_admin {
-    content: url('images/button_EnterAdmin_light.png');
+    content: url('images/buttons/button_EnterAdmin_light.png');
 }
 
 [data-theme="light"] .btn-image-enter_goust {
-    content: url('images/button_EnterGoust_light.png');
+    content: url('images/buttons/button_EnterGoust_light.png');
 }
 [data-theme="light"] .btn-image-changetheme {
-    content: url('images/button_DarkTheme_light.png');
+    content: url('images/buttons/button_DarkTheme_light.png');
 }
 
 
@@ -809,7 +809,7 @@ select option[value="empty"][disabled] {
 
 /* Фоновые изображения */
 [data-theme="light"] body {
-    background-image: url('images/backfon_pc_ligth.png');
+    background-image: url('images/backfon/backfon_pc_ligth.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -828,7 +828,7 @@ select option[value="empty"][disabled] {
 }
 
 [data-theme="dark"] body {
-    background-image: url('images/backfon_pc_dark.png');
+    background-image: url('images/backfon/backfon_pc_dark.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -848,11 +848,11 @@ select option[value="empty"][disabled] {
 
 /* Изображение для героя */
 [data-theme="light"] .hero-image img {
-    content: url('images/main_pc_ligth.jpg');
+    content: url('images/main_fon/main_pc_ligth.jpg');
 }
 
 [data-theme="dark"] .hero-image img {
-    content: url('images/main_dark_pc.png');
+    content: url('images/main_fon/main_dark_pc.png');
 }
 
 /* Адаптивность */
@@ -980,11 +980,11 @@ select option[value="empty"][disabled] {
     
     /* Фоновые изображения для мобильных */
     [data-theme="light"] body {
-        background-image: url('images/backfon_mobile_ligth.png');
+        background-image: url('images/backfon/backfon_mobile_ligth.png');
     }
     
     [data-theme="dark"] body {
-        background-image: url('images/backfon_mobile_dark.png');
+        background-image: url('images/backfon/backfon_mobile_dark.png');
     }
 }
 
