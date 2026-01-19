@@ -8,9 +8,11 @@ module.exports = function(db){
             const section = req.params.section;
             const articleId = req.params.id;
             const doc = await db.collection(section).doc(articleId).get();
+            
             if (!doc.exists) {
                 return res.status(404).json({ error: 'Статья не найдена' });
             }
+
             await db.collection(section).doc(articleId).delete();
             res.status(204).send();
         } catch (error) {

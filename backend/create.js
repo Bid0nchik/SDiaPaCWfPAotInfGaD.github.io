@@ -15,6 +15,7 @@ module.exports = function(db){
                 date: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
+            
             const validate = validateArticleData(articleData, false);
             if (!validate.isValid) {
                 return res.status(400).json({
@@ -24,7 +25,6 @@ module.exports = function(db){
             }
 
             const docRef = await db.collection(section).add(articleData);
-            
             const responseArticle = {
                 id: docRef.id,
                 ...articleData
