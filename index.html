@@ -15,10 +15,10 @@
             <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
                 <button id="adminLoginBtn" class="btn btn-primary image-btn">
-                    <img src="images/button_EnterAdmin_dark.png" alt="Войти как админ" class="btn-image-enter_admin">
+                    <img src="images/buttons/button_EnterAdmin_dark.png" alt="Войти как админ" class="btn-image-enter_admin">
                 </button>
                 <button id="guestLoginBtn" class="btn btn-secondary image-btn">
-                    <img src="images/button_EnterGoust_dark.png" alt="Войти как гость" class="btn-image-enter_goust">
+                    <img src="images/buttons/button_EnterGoust_dark.png" alt="Войти как гость" class="btn-image-enter_goust">
                 </button>
             </div>
             <p id="errorMessage" class="error-message"></p>
@@ -31,13 +31,13 @@
             <h1>Melanis</h1>
             <div class="header-actions">
                 <button id="homeBtn" class="image-btn btn btn-secondary hidden" onclick="goToHome()">
-                    <img src="images/button_home_dark.png" alt="Главная" class="btn-image">
+                    <img src="images/buttons/button_home_dark.png" alt="Главная" class="btn-image">
                 </button>
                 <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
                     Новая статья
                 </button>
                 <button id="themeToggle" class="image-btn btn btn-secondary hidden" onclick="toggleTheme()">
-                    <img src="images/button_LigthTheme_dark.png" id = "themeChange" alt="Светлая тема" class="btn-image-changetheme btn-image-changethemeToLigth">
+                    <img src="images/buttons/button_LigthTheme_dark.png" id = "themeChange" alt="Светлая тема" class="btn-image-changetheme btn-image-changethemeToLigth">
                 </button>
                 <button id="logoutBtn" class="btn btn-secondary hidden" onclick="logout()">
                     Выйти
@@ -57,13 +57,13 @@
             <!-- Список разделов статей -->
             <div id = "selectionMenu" class = "selectionMenu hidden">
                 <button onclick="LoadSectionProgramm()" class = "image-btn">
-                    <img src='images/SectProg_dark_pc.png' id = "SectProg">
+                    <img src='images/sections/SectProg_dark_pc.png' id = "SectProg">
                 </button>
                 <button onclick="LoadSectionOsint()" class = "image-btn">
-                    <img src='images/SectOsint_dark_pc.png' id = "SectOsint">
+                    <img src='images/sections/SectOsint_dark_pc.png' id = "SectOsint">
                 </button>
                 <button onclick="LoadSectionTroll()" class = "image-btn">
-                    <img src='images/Troll_dark_pc.png.png' id = "SectTroll">
+                    <img src='images/sections/Troll_dark_pc.png.png' id = "SectTroll">
                 </button>
             </div>
             <div id="articlesContainer" class="articles-container hidden">
