@@ -507,7 +507,7 @@ function editArticle(articleId) {
 
     const preview = document.getElementById('imagePreview');
     const removeBtn = document.getElementById('removeImageBtn');
-    
+
     if (article.image) {
         currentImage = article.image;
         preview.innerHTML = `<img src="${article.image}" alt="Предпросмотр">`;
