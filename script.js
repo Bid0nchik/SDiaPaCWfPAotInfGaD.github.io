@@ -9,11 +9,11 @@ let currentSection = null;
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
-    showModeSelection();
+    enterReg();
     
     // Обработчики событий
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
-    document.getElementById('adminLoginBtn').addEventListener('click', checkPassword);
+    document.getElementById('adminLoginBtn').addEventListener('click', enterReg);
     document.getElementById('guestLoginBtn').addEventListener('click', enterAsGuest);
     document.getElementById('passwordInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') checkPassword(); // если событие нажатия клавиши e происходит и оно enter то...
@@ -46,40 +46,101 @@ select.addEventListener("change", function(e){
     select.style.color = '#ffffffff';
 });
 
+function enterReg(){
+    document.getElementById('authModal').classList.add('hidden')
+    document.getElementById('EnterRegWin').classList.remove('hidden')
+}
+
+// Функция для открытия определенной вкладки (Login или Register)
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+
+    // Скрыть все элементы с классом .tab-content
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Удалить класс "active" у всех кнопок вкладок
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Показать текущую вкладку и добавить класс "active" к кнопке, которая ее открыла
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    const firstTabButton = document.querySelector('.tab-button');
+    if (firstTabButton) {
+        firstTabButton.click();
+    }
+});
+
+async function RegisterNewAccount(){
+    const numberPhone = document.getElementById("numberPhoneInput").value.trim();
+    const login = document.getElementById("regLoginInput").value.trim();
+    const password = document.getElementById("regPasswordInput").value.trim();
+    const repeat_password = document.getElementById("regPasswordConfirmInput").value.trim();
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (!numberPhone) return errorMessage.textContent = "Введите номер телефона";
+    if (!login) return errorMessage.textContent = "Введите логин";
+    if (!password) return errorMessage.textContent = "Введите пароль";
+    if (password !== repeat_password) return errorMessage.textContent = "Пароли не совпадают";
+    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auch/register`, {
+        method:'POST',
+        headers: {
+            'Content-Type':'application/json'
+        },
+        body: JSON.stringify({
+            number:numberPhone,
+            login: login,
+            password: password
+        })
+    });
+    if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+}
+}
 
 // ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
-async function checkPassword() {
+async function checkLogPasEnter() {
+    const login = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
     const errorMessage = document.getElementById('errorMessage');
-    if (!password) {
-        errorMessage.textContent = 'Введите пароль';
-        return;
-    }
-    try {
-        const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auth/check-password`, { // Спрашиваем сервер t/f
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ password: password })
-        });
-        
-        const data = await response.json(); // записываем ответ сервера в data преобразовывая из json
-        
-        if (data.success) {
-            currentMode = 'admin';
-            showAllFunctions();
-            hideWindowАuthorization();
-            showAdminFunctions();
-            errorMessage.textContent = '';
-            passwordInput.value = '';
-        } else {
-            errorMessage.textContent = data.error || 'Неверный пароль! Попробуйте снова.';
-            passwordInput.focus();
-        }
-    } catch (error) {
-        errorMessage.textContent = 'Ошибка соединения с сервером, попробуйте позже';
+
+    if (!login) return errorMessage.textContent = "Введите логин"
+    if (!password) return errorMessage.textContent = 'Введите пароль';
+
+    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auth/check-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ login:login, password: password })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+        currentMode = 'admin';
+        showAllFunctions();
+        hideWindowАuthorization();
+        showAdminFunctions();
+        errorMessage.textContent = '';
+        passwordInput.value = '';
+    } else {
+        errorMessage.textContent = data.error || 'Неверный пароль! Попробуйте снова.';
         passwordInput.focus();
+    }
+
+    if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
     }
 }
 // Вход как гость
@@ -156,6 +217,7 @@ function logout() {
     document.getElementById('articleView').classList.add('hidden');
     document.getElementById('selectionMenu').classList.add('hidden');
     document.getElementById('articlesContainer').classList.add('hidden');
+    document.getElementById('EnterRegWin').classList.add('hidden');
     showModeSelection();
 }
 

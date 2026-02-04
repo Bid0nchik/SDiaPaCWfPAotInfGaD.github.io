@@ -11,19 +11,43 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <h2>Вход в систему</h2>
-            <p>Введите пароль администратора для полного доступа или войдите как гость для чтения</p>
-            <input type="password" id="passwordInput" placeholder="Пароль администратора" class="password-input">
             <div class="auth-buttons">
                 <button id="adminLoginBtn" class="btn btn-primary image-btn">
-                    <img src="images/buttons/button_EnterAdmin_dark.png" alt="Войти как админ" class="btn-image-enter_admin">
+                    Войти / Зарегистрироваться
                 </button>
                 <button id="guestLoginBtn" class="btn btn-secondary image-btn">
-                    <img src="images/buttons/button_EnterGoust_dark.png" alt="Войти как гость" class="btn-image-enter_goust">
+                    Режим чтения
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div id='EnterRegWin' class='modal hidden'>
+        <div class="modal-content auth-modal-content">
+            <!-- Блок вкладок -->
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab(event, 'Login')">Авторизация</button>
+                <button class="tab-button" onclick="openTab(event, 'Register')">Регистрация</button>
+            </div>
+
+            <div id="Login" class="tab-content">
+                <input type="text" id="loginInput" placeholder="Логин" class="password-input">
+                <input type="password" id="passwordInput" placeholder="Пароль" class="password-input">
+                <button class="btn btn-primary" onclick="checkLogPasEnter()">Войти</button>
+            </div>
+
+            <div id="Register" class="tab-content" style="display:none;">
+                <input type="text" id="numberPhoneInput" placeholder="Номер телефона" class="password-input">
+                <input type="text" id="regLoginInput" placeholder="Логин" class="password-input">
+                <input type="password" id="regPasswordInput" placeholder="Пароль" class="password-input">
+                <input type="password" id="regPasswordConfirmInput" placeholder="Повторите пароль" class="password-input">
+                <button class="btn btn-primary" onclick="RegisterNewAccount()">Зарегистрироваться</button>
+            </div>
+            <button class="back-button" onclick="logout()">←</button>
             <p id="errorMessage" class="error-message"></p>
         </div>
     </div>
+
 
     <!-- Шапка -->
     <header class="header">

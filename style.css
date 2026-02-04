@@ -454,6 +454,21 @@ select option[value="empty"][disabled] {
     display: inline-block;
     text-align: center;
 }
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 26px;
+    cursor: pointer;
+    position: relative;
+}
 
 .btn-primary {
     background: #5c6bc0;
@@ -635,7 +650,6 @@ select option[value="empty"][disabled] {
     padding: 1.5rem 0;
     margin-top: 2rem;
 }
-
 /* Loading spinner */
 .loading {
     text-align: center;
@@ -1076,4 +1090,37 @@ select option[value="empty"][disabled] {
 .loading p {
     font-size: 0.9rem;
     margin-top: 0.5rem;
+}
+
+.auth-modal-content {
+    max-width: 450px;
+}
+
+/* Стили для вкладок */
+.tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+}
+
+.tab-button {
+    flex-grow: 1;
+    padding: 10px 0;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s, border-bottom 0.3s;
+    color: #95a5a6;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom 0.15s;
+}
+
+.tab-button:hover {
+    color: #ffffff;
+}
+
+.tab-button.active {
+    color: #3498db; /* Цвет вашей основной кнопки */
+    border-bottom: 2px solid #3498db;
+    font-weight: 600;
 }

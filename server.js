@@ -35,7 +35,8 @@ try {
 const db = admin.firestore();
 
 //импорт эндпоинтов
-const check_password = require('./backend/auth/password');
+const check_password = require('./backend/auth/passwordAdmin');
+const register = require('./backend/auth/register')(db);
 const get_art = require('./backend/crud/get')(db);
 const create_art = require('./backend/crud/create')(db);
 const update_art = require('./backend/crud/update')(db);
@@ -43,6 +44,7 @@ const delete_art = require('./backend/crud/delete')(db);
 
 // эндпоинты
 app.use('/auth', check_password);
+app.use('/auth', register);
 app.use('/articles', get_art);
 app.use('/articles', create_art);
 app.use('/articles', update_art);
