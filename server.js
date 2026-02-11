@@ -85,5 +85,12 @@ app.use((req, res, next) => {
     next();
 });
 
-app.listen(PORT);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Сервер запущен на порту ${PORT}`);
+    console.log(`🌍 Режим: ${process.env.NODE_ENV || 'development'}`);
+}).on('error', (err) => {
+    console.error('❌ Ошибка запуска сервера:', err);
+    process.exit(1);
+});
+
 module.exports = app;
