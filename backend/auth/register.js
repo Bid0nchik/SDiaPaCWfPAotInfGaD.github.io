@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 module.exports = function(db){
-    router.post('/register', async (req,res)=>{
+    router.post('/register/new', async (req,res)=>{
+        
         try{
             const { number, login, password } = req.body;
             const NewAccount = {

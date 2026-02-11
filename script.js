@@ -9,7 +9,6 @@ let currentSection = null;
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
-    enterReg();
     
     // Обработчики событий
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
@@ -90,7 +89,8 @@ async function RegisterNewAccount(){
     if (!login) return errorMessage.textContent = "Введите логин";
     if (!password) return errorMessage.textContent = "Введите пароль";
     if (password !== repeat_password) return errorMessage.textContent = "Пароли не совпадают";
-    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auch/register`, {
+    /*
+    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auch/register/new`, {
         method:'POST',
         headers: {
             'Content-Type':'application/json'
@@ -102,13 +102,61 @@ async function RegisterNewAccount(){
         })
     });
     if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-}
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
+    }*/
 }
 
+async function sendSMSCode() {
+    const phoneNumber = document.getElementById("numberPhoneInput").value.trim();
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Номер должен быть в международном формате: +79991234567
+    if (!phoneNumber.startsWith('+')) {
+        errorMessage.textContent = "Номер должен начинаться с +";
+        return;
+    }
+
+    try {
+        const appVerifier = window.recaptchaVerifier;
+        // Отправка SMS
+        const firebaseAuth = firebase.auth(); 
+
+        const result = await firebaseAuth.signInWithPhoneNumber(phoneNumber, appVerifier);
+        window.confirmationResult = result; // Сохраняем результат для проверки кода
+
+        // Переключаем интерфейс на ввод кода
+        document.getElementById("Register").classList.add('hidden');
+        document.getElementById("SMS").classList.remove('hidden');
+        errorMessage.textContent = "SMS отправлено!";
+        
+    } catch (error) {
+        console.error("Ошибка при отправке SMS:", error);
+        errorMessage.textContent = "Ошибка: " + error.message;
+        // Сброс капчи при ошибке, чтобы можно было нажать еще раз
+        window.recaptchaVerifier.render().then(widgetId => {
+            grecaptcha.reset(widgetId);
+        });
+    }
+}
+async function verifySMS() {
+    const code = document.getElementById("CodeSMS").value.trim();
+    const errorMessage = document.getElementById('errorMessage');
+
+    try {
+        const result = await window.confirmationResult.confirm(code);
+        const user = result.user;
+        console.log("Успешный вход:", user.uid);
+        RegisterNewAccount()
+
+    } catch (error) {
+        errorMessage.textContent = "Неверный код SMS";
+    }
+}
+
+
 // ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
-async function checkLogPasEnter() {
+/*async function checkLogPasEnter() {
     const login = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
     const errorMessage = document.getElementById('errorMessage');
@@ -126,23 +174,20 @@ async function checkLogPasEnter() {
     
     const data = await response.json();
     
-    if (data.success) {
+    if (data.admin === 'yes') {
         currentMode = 'admin';
         showAllFunctions();
         hideWindowАuthorization();
         showAdminFunctions();
         errorMessage.textContent = '';
         passwordInput.value = '';
-    } else {
-        errorMessage.textContent = data.error || 'Неверный пароль! Попробуйте снова.';
-        passwordInput.focus();
     }
 
     if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
     }
-}
+}*/
 // Вход как гость
 function enterAsGuest() {
     currentMode = 'guest';

@@ -13,7 +13,8 @@ module.exports = function(db){
             if (password === process.env.ADMIN_PASSWORD) {
                 res.json({ 
                     success: true,
-                    message: 'Добро пожаловать, наш повелитель'
+                    message: 'Добро пожаловать, наш повелитель',
+                    admin:'yes'
                 });
             } else if(!snapshot.empty){
                 const account = servLogins.docs[0].data();

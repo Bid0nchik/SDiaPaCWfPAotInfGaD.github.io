@@ -502,16 +502,12 @@ select option[value="empty"][disabled] {
     background: #f44336;
     border-color: #e53935;
 }
-
-.back-btn {
-    background: #90a4ae;
-    border: 1px solid #78909c;
-    color: #ffffff;
+.back-btn{
+    background: none;
+    border:none;
 }
-
-.back-btn:hover {
-    background: #78909c;
-    border-color: #607d8b;
+.btn_image_back{
+    width:120px;
 }
 
 /* Специальные кнопки для светлой темы */
@@ -536,7 +532,7 @@ select option[value="empty"][disabled] {
 }
 
 .btn-image {
-    width:190px; 
+    width:160px; 
     cursor: pointer;
     display: block;
 }
@@ -571,7 +567,15 @@ select option[value="empty"][disabled] {
 [data-theme="light"] .btn-image-changetheme {
     content: url('images/buttons/button_DarkTheme_light.png');
 }
-
+[data-theme="light"] .btn_image_back {
+    content: url('images/buttons/button_back_light.png');
+}
+[data-theme="light"] .btn-delete {
+    content: url('images/buttons/button_delete_light.png');
+}
+[data-theme="light"] .btn-newart {
+    content: url('images/buttons/button_newArt_light.png');
+}
 
 [data-theme="light"] #newArticleBtn {
     background: #a5d6a7;
@@ -868,6 +872,7 @@ select option[value="empty"][disabled] {
 [data-theme="dark"] .hero-image img {
     content: url('images/main_fon/main_dark_pc.png');
 }
+
 
 /* Адаптивность */
 @media (max-width: 768px) {

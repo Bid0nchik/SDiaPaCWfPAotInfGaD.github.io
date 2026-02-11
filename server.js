@@ -1,5 +1,6 @@
 const express = require('express');  
 const app = express();  
+
 const cors = require('cors');                   
 const admin = require('firebase-admin');
 const PORT = process.env.PORT || 3001;
@@ -7,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 const limiter = require('./backend/middleware/limiter');
 const cash = require('./backend/middleware/cash');
 
-const firebase_env = require('./backend/firebase/firebase');
+const firebase_env = require('./backend/firebase/firebase_main');
 const serviceAccount = require('./backend/firebase/firebase_config');
 
 app.use(express.json({ limit: '10mb' }));
@@ -34,8 +35,21 @@ try {
 }
 const db = admin.firestore();
 
+app.post('/api/verify-token', async (req, res) => {
+  const idToken = req.body.idToken;
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Пользователь подтвержден! 
+    res.json({ status: 'success', uid: decodedToken.uid });
+
+  } catch (error) {
+    res.status(401).send('Unauthorized');
+  }
+});
+
 //импорт эндпоинтов
-const check_password = require('./backend/auth/passwordAdmin');
+const check_password = require('./backend/auth/passwordAdmin')(db);
 const register = require('./backend/auth/register')(db);
 const get_art = require('./backend/crud/get')(db);
 const create_art = require('./backend/crud/create')(db);
@@ -56,6 +70,19 @@ app.use((error, req, res, next) => {
         error: 'Внутренняя ошибка сервера',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+});
+
+app.use((req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const log = {
+        time: new Date().toISOString(),
+        ip: ip,
+        method: req.method,
+        url: req.url,
+        userAgent: req.headers['user-agent']
+    };
+    console.log("Новый посетитель:", log);
+    next();
 });
 
 app.listen(PORT);

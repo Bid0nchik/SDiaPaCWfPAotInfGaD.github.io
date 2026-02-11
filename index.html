@@ -41,8 +41,15 @@
                 <input type="text" id="regLoginInput" placeholder="Логин" class="password-input">
                 <input type="password" id="regPasswordInput" placeholder="Пароль" class="password-input">
                 <input type="password" id="regPasswordConfirmInput" placeholder="Повторите пароль" class="password-input">
-                <button class="btn btn-primary" onclick="RegisterNewAccount()">Зарегистрироваться</button>
+                <div id="recaptcha-container"></div>
+                <button class="btn btn-primary" onclick="sendSMSCode()">Зарегистрироваться</button>
             </div>
+
+            <div id="SMS" class = "hidden">
+            <input type="text" id="CodeSMS" placeholder="Код из SMS" class="password-input">
+            <button class="btn btn-primary" onclick="verifySMS()">Отправить код</button>
+            </div>
+
             <button class="back-button" onclick="logout()">←</button>
             <p id="errorMessage" class="error-message"></p>
         </div>
@@ -58,7 +65,7 @@
                     <img src="images/buttons/button_home_dark.png" alt="Главная" class="btn-image">
                 </button>
                 <button id="newArticleBtn" class="btn btn-secondary hidden" onclick="showEditor()">
-                    Новая статья
+                    <img src="images/buttons/button_newArt_dark.png" alt="Главная" class="btn-newart">
                 </button>
                 <button id="themeToggle" class="image-btn btn btn-secondary hidden" onclick="toggleTheme()">
                     <img src="images/buttons/button_LigthTheme_dark.png" id = "themeChange" alt="Светлая тема" class="btn-image-changetheme btn-image-changethemeToLigth">
@@ -135,7 +142,7 @@
                         <input type="file" id="articleImage" accept="image/*" class="form-file">
                         <div class="image-controls">
                             <button id="removeImageBtn" class="btn btn-danger hidden" onclick="removeImage()">
-                                Удалить картинку
+                              Удалить картинку
                             </button>
                         </div>
                         <div id="imagePreview" class="image-preview"></div>
@@ -145,7 +152,9 @@
 
             <!-- Просмотр статьи (скрыт по умолчанию) -->
             <div id="articleView" class="article-view hidden">
-                <button onclick="goToStat()" class="btn btn-secondary back-btn">← Назад к статьям</button>
+                <button onclick="goToStat()" src="images/buttons/button_back_dark.png" class="back-btn">
+                    <img src="images/buttons/button_back_dark.png" alt="Главная" class="btn_image_back">
+                </button>
                 <article id="articleContentContainer" class="article-content">
                     <!-- Содержание статьи будет здесь -->
                 </article>
@@ -158,7 +167,6 @@
             <p>© 2026 Melanis. Все права защищены.</p>
         </div>
     </footer>
-
     <script src="script.js"></script>
 </body>
 </html>
