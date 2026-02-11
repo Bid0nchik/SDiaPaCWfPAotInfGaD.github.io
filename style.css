@@ -509,6 +509,12 @@ select option[value="empty"][disabled] {
 .btn_image_back{
     width:120px;
 }
+.capcha{
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+
 
 /* Специальные кнопки для светлой темы */
 [data-theme="light"] #themeToggle {

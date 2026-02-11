@@ -33,20 +33,20 @@ try {
 } catch (error) {
     process.exit(1);
 }
-const db = admin.firestore();
-
-app.post('/api/verify-token', async (req, res) => {
-  const idToken = req.body.idToken;
-
+app.post('/api/auth', async (req, res) => {
+  const idToken = req.body.token; // Получаем токен от фронтенда
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const phone = decodedToken.phone_number;
+    
     // Пользователь подтвержден! 
-    res.json({ status: 'success', uid: decodedToken.uid });
-
+    // Здесь можно создать сессию или записать IP пользователя в логи
+    res.json({ status: 'success', phone });
   } catch (error) {
-    res.status(401).send('Unauthorized');
+    res.status(401).send('Ошибка авторизации');
   }
 });
+const db = admin.firestore();
 
 //импорт эндпоинтов
 const check_password = require('./backend/auth/passwordAdmin')(db);
@@ -55,7 +55,7 @@ const get_art = require('./backend/crud/get')(db);
 const create_art = require('./backend/crud/create')(db);
 const update_art = require('./backend/crud/update')(db);
 const delete_art = require('./backend/crud/delete')(db);
-
+const tgSMS = require('./backend/auth/telegramSend');
 // эндпоинты
 app.use('/auth', check_password);
 app.use('/auth', register);
@@ -63,7 +63,7 @@ app.use('/articles', get_art);
 app.use('/articles', create_art);
 app.use('/articles', update_art);
 app.use('/articles', delete_art);
-
+app.use('/auth', tgSMS);
 // Обработка ошибок
 app.use((error, req, res, next) => {
     res.status(500).json({ 

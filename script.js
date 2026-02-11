@@ -14,10 +14,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('articleImage').addEventListener('change', handleImageUpload);
     document.getElementById('adminLoginBtn').addEventListener('click', enterReg);
     document.getElementById('guestLoginBtn').addEventListener('click', enterAsGuest);
+    document.getElementById("RegisterBtn").addEventListener("click", sendSMSCodeFront);
+    //document.getElementById("SendBtn").addEventListener("click", verifySMS);
     document.getElementById('passwordInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') checkPassword(); // если событие нажатия клавиши e происходит и оно enter то...
     });
-    
+    document.addEventListener('DOMContentLoaded', (event) => {
+    const firstTabButton = document.querySelector('.tab-button');
+    if (firstTabButton) {
+        firstTabButton.click();
+    }
+});
     // Обработчики клавиш
     document.addEventListener('keydown', handleKeyPress);
 });
@@ -53,7 +60,6 @@ function enterReg(){
 // Функция для открытия определенной вкладки (Login или Register)
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
-
     // Скрыть все элементы с классом .tab-content
     tabcontent = document.getElementsByClassName("tab-content");
     for (i = 0; i < tabcontent.length; i++) {
@@ -71,90 +77,135 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    const firstTabButton = document.querySelector('.tab-button');
-    if (firstTabButton) {
-        firstTabButton.click();
-    }
-});
-
-async function RegisterNewAccount(){
-    const numberPhone = document.getElementById("numberPhoneInput").value.trim();
-    const login = document.getElementById("regLoginInput").value.trim();
-    const password = document.getElementById("regPasswordInput").value.trim();
-    const repeat_password = document.getElementById("regPasswordConfirmInput").value.trim();
-    const errorMessage = document.getElementById('errorMessage');
-
-    if (!numberPhone) return errorMessage.textContent = "Введите номер телефона";
-    if (!login) return errorMessage.textContent = "Введите логин";
-    if (!password) return errorMessage.textContent = "Введите пароль";
-    if (password !== repeat_password) return errorMessage.textContent = "Пароли не совпадают";
-    /*
-    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auch/register/new`, {
-        method:'POST',
-        headers: {
-            'Content-Type':'application/json'
-        },
-        body: JSON.stringify({
-            number:numberPhone,
-            login: login,
-            password: password
-        })
-    });
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-    }*/
-}
-
-async function sendSMSCode() {
-    const phoneNumber = document.getElementById("numberPhoneInput").value.trim();
-    const errorMessage = document.getElementById('errorMessage');
-
-    // Номер должен быть в международном формате: +79991234567
-    if (!phoneNumber.startsWith('+')) {
-        errorMessage.textContent = "Номер должен начинаться с +";
-        return;
-    }
-
+async function sendSMSCodeFront() {
+    const username = document.getElementById('usernameInput').value.trim();
+    const login = document.getElementById('regLoginInput').value.trim();
+    const password = document.getElementById('regPasswordInput').value.trim();
+    const repeat_password = document.getElementById('regPasswordConfirmInput').value.trim();
+    const errorMes = document.getElementById("errorMessage");
+    
+    // Проверки
+    if (!username) return errorMes.textContent = "Введите username";
+    if (!login) return errorMes.textContent = "Введите логин";
+    if (!password) return errorMes.textContent = "Введите пароль";
+    if (!repeat_password) return errorMes.textContent = 'Введите повтор пароля';
+    if (password !== repeat_password) return errorMes.textContent = "Пароли не совпадают";
+    if (login.length < 5) return errorMes.textContent = 'Минимальная длина логина - 6 символов';
+    if (password.length < 5) return errorMes.textContent = 'Минимальная длина пароля - 6 символов';
+    
+    errorMes.textContent = "Отправка...";
+    errorMes.style.color = 'gray';
+    
     try {
-        const appVerifier = window.recaptchaVerifier;
-        // Отправка SMS
-        const firebaseAuth = firebase.auth(); 
-
-        const result = await firebaseAuth.signInWithPhoneNumber(phoneNumber, appVerifier);
-        window.confirmationResult = result; // Сохраняем результат для проверки кода
-
-        // Переключаем интерфейс на ввод кода
-        document.getElementById("Register").classList.add('hidden');
-        document.getElementById("SMS").classList.remove('hidden');
-        errorMessage.textContent = "SMS отправлено!";
+        const response = await fetch(`${API_URL}/auth/sms`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                username: username,
+                login: login,      // 👉 сохраняем на будущее
+                password: password  // 👉 сохраняем на будущее
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            // 👇 ПОКАЗЫВАЕМ ОШИБКУ, а не throw
+            errorMes.textContent = data.error || 'Ошибка сервера';
+            errorMes.style.color = 'red';
+            return;
+        }
+        
+        if (data.success === true) {
+            // 👇 СОХРАНЯЕМ данные для следующего шага
+            localStorage.setItem('pendingUsername', username);
+            localStorage.setItem('pendingLogin', login);
+            localStorage.setItem('pendingPassword', password);
+            
+            // 👇 ПОКАЗЫВАЕМ понятное сообщение
+            errorMes.textContent = '✅ Код отправлен в Telegram! Проверьте @' + username;
+            errorMes.style.color = 'green';
+            
+            // 👇 ПОКАЗЫВАЕМ поле для ввода кода
+            document.getElementById('SMS').classList.remove('hidden');
+            document.getElementById('RegisterBtn').disabled = true;
+        } else {
+            errorMes.textContent = data.error || 'Не удалось отправить код';
+            errorMes.style.color = 'red';
+        }
         
     } catch (error) {
-        console.error("Ошибка при отправке SMS:", error);
-        errorMessage.textContent = "Ошибка: " + error.message;
-        // Сброс капчи при ошибке, чтобы можно было нажать еще раз
-        window.recaptchaVerifier.render().then(widgetId => {
-            grecaptcha.reset(widgetId);
-        });
+        console.error('Ошибка:', error);
+        errorMes.textContent = 'Ошибка соединения с сервером';
+        errorMes.style.color = 'red';
     }
 }
+// ✅ НОВАЯ ФУНКЦИЯ
 async function verifySMS() {
-    const code = document.getElementById("CodeSMS").value.trim();
-    const errorMessage = document.getElementById('errorMessage');
-
+    const code = document.getElementById('CodeSMS').value.trim();
+    const username = localStorage.getItem('pendingUsername');
+    const login = localStorage.getItem('pendingLogin');
+    const password = localStorage.getItem('pendingPassword');
+    const errorMes = document.getElementById("errorMessage");
+    
+    if (!code) {
+        errorMes.textContent = 'Введите код из Telegram';
+        return;
+    }
+    
+    errorMes.textContent = 'Проверка...';
+    errorMes.style.color = 'gray';
+    
     try {
-        const result = await window.confirmationResult.confirm(code);
-        const user = result.user;
-        console.log("Успешный вход:", user.uid);
-        RegisterNewAccount()
-
+        const response = await fetch(`${API_URL}/auth/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                code: code
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // 👇 УСПЕХ! Регистрируем пользователя
+            errorMes.textContent = '✅ Успешная регистрация!';
+            errorMes.style.color = 'green';
+            
+            // Очищаем сохраненные данные
+            localStorage.removeItem('pendingUsername');
+            localStorage.removeItem('pendingLogin');
+            localStorage.removeItem('pendingPassword');
+            
+            // Автоматический вход
+            currentMode = 'guest';
+            showAllFunctions();
+            hideWindowАuthorization();
+            showGuestFunctions();
+            
+            // Скрываем окно регистрации
+            document.getElementById('EnterRegWin').classList.add('hidden');
+            document.getElementById('SMS').classList.add('hidden');
+            
+        } else {
+            errorMes.textContent = data.error || 'Неверный код';
+            errorMes.style.color = 'red';
+        }
+        
     } catch (error) {
-        errorMessage.textContent = "Неверный код SMS";
+        console.error('Ошибка:', error);
+        errorMes.textContent = 'Ошибка соединения с сервером';
+        errorMes.style.color = 'red';
     }
 }
 
-
+// 👇 НЕ ЗАБУДЬ ПРИВЯЗАТЬ К КНОПКЕ!
+document.getElementById("SendBtn").addEventListener("click", verifySMS);
 // ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
 /*async function checkLogPasEnter() {
     const login = document.getElementById('loginInput').value.trim();

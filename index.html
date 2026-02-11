@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Melanis</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/images.png">
 </head>
 <body>
     <!-- Аутентификация -->
@@ -37,17 +38,17 @@
             </div>
 
             <div id="Register" class="tab-content" style="display:none;">
-                <input type="text" id="numberPhoneInput" placeholder="Номер телефона" class="password-input">
+                <input type="text" id="usernameInput" placeholder="Username из Telegram" class="password-input">
                 <input type="text" id="regLoginInput" placeholder="Логин" class="password-input">
                 <input type="password" id="regPasswordInput" placeholder="Пароль" class="password-input">
                 <input type="password" id="regPasswordConfirmInput" placeholder="Повторите пароль" class="password-input">
-                <div id="recaptcha-container"></div>
-                <button class="btn btn-primary" onclick="sendSMSCode()">Зарегистрироваться</button>
+                <div id="recaptcha-container" class = 'capcha'></div>
+                <button class="btn btn-primary" id = "RegisterBtn">Зарегистрироваться</button>
             </div>
 
             <div id="SMS" class = "hidden">
-            <input type="text" id="CodeSMS" placeholder="Код из SMS" class="password-input">
-            <button class="btn btn-primary" onclick="verifySMS()">Отправить код</button>
+            <input type="text" id="CodeSMS" placeholder="Код из Telegram" class="password-input">
+            <button class="btn btn-primary" id = "SendBtn">Отправить код</button>
             </div>
 
             <button class="back-button" onclick="logout()">←</button>
