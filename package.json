@@ -17,7 +17,8 @@
     "express-rate-limit": "^6.7.1",
     "firebase-admin": "^11.8.0",
     "google-gax": "^4.0.0",
-    "protobufjs": "^7.2.0"
+    "protobufjs": "^7.2.0",
+    "node-telegram-bot-api": "^0.67.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
