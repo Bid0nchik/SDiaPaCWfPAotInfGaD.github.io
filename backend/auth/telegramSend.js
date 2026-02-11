@@ -1,3 +1,11 @@
+const express = require('express');
+const TelegramBot = require('node-telegram-bot-api');
+const router = express.Router();
+const validateSection = require('../middleware/validSection');
+
+const TOKEN = '8351714545:AAERHeq51FbIWJGs-EWLjlhE_q9iyF3y4SA';
+const bot = new TelegramBot(TOKEN, {polling:true});
+
 router.post('/sms', validateSection, async (req, res) => {
     try {
         let { username } = req.body;
@@ -57,3 +65,4 @@ router.post('/sms', validateSection, async (req, res) => {
         });
     }
 });
+module.exports = router;
