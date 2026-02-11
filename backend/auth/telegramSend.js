@@ -2,7 +2,6 @@ const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const router = express.Router();
 const validateSection = require('../middleware/validSection');
-
 const TOKEN = '8351714545:AAERHeq51FbIWJGs-EWLjlhE_q9iyF3y4SA';
 const bot = new TelegramBot(TOKEN, {polling:true});
 module.exports = function(){
@@ -67,3 +66,4 @@ module.exports = function(){
 });
 return router
 }
+
