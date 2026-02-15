@@ -104,33 +104,24 @@ async function sendSMSCodeFront() {
             },
             body: JSON.stringify({ 
                 username: username,
-                login: login,      // 👉 сохраняем на будущее
-                password: password  // 👉 сохраняем на будущее
             })
         });
         
         const data = await response.json();
         
         if (!response.ok) {
-            // 👇 ПОКАЗЫВАЕМ ОШИБКУ, а не throw
             errorMes.textContent = data.error || 'Ошибка сервера';
             errorMes.style.color = 'red';
             return;
         }
         
         if (data.success === true) {
-            // 👇 СОХРАНЯЕМ данные для следующего шага
             localStorage.setItem('pendingUsername', username);
             localStorage.setItem('pendingLogin', login);
             localStorage.setItem('pendingPassword', password);
             
-            // 👇 ПОКАЗЫВАЕМ понятное сообщение
-            errorMes.textContent = '✅ Код отправлен в Telegram! Проверьте @' + username;
+            errorMes.textContent = 'Код отправлен в Telegram!';
             errorMes.style.color = 'green';
-            
-            // 👇 ПОКАЗЫВАЕМ поле для ввода кода
-            document.getElementById('SMS').classList.remove('hidden');
-            document.getElementById('RegisterBtn').disabled = true;
         } else {
             errorMes.textContent = data.error || 'Не удалось отправить код';
             errorMes.style.color = 'red';
@@ -142,103 +133,10 @@ async function sendSMSCodeFront() {
         errorMes.style.color = 'red';
     }
 }
-// ✅ НОВАЯ ФУНКЦИЯ
+
 async function verifySMS() {
-    const code = document.getElementById('CodeSMS').value.trim();
-    const username = localStorage.getItem('pendingUsername');
-    const login = localStorage.getItem('pendingLogin');
-    const password = localStorage.getItem('pendingPassword');
-    const errorMes = document.getElementById("errorMessage");
     
-    if (!code) {
-        errorMes.textContent = 'Введите код из Telegram';
-        return;
-    }
-    
-    errorMes.textContent = 'Проверка...';
-    errorMes.style.color = 'gray';
-    
-    try {
-        const response = await fetch(`${API_URL}/auth/verify`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username: username,
-                code: code
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // 👇 УСПЕХ! Регистрируем пользователя
-            errorMes.textContent = '✅ Успешная регистрация!';
-            errorMes.style.color = 'green';
-            
-            // Очищаем сохраненные данные
-            localStorage.removeItem('pendingUsername');
-            localStorage.removeItem('pendingLogin');
-            localStorage.removeItem('pendingPassword');
-            
-            // Автоматический вход
-            currentMode = 'guest';
-            showAllFunctions();
-            hideWindowАuthorization();
-            showGuestFunctions();
-            
-            // Скрываем окно регистрации
-            document.getElementById('EnterRegWin').classList.add('hidden');
-            document.getElementById('SMS').classList.add('hidden');
-            
-        } else {
-            errorMes.textContent = data.error || 'Неверный код';
-            errorMes.style.color = 'red';
-        }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        errorMes.textContent = 'Ошибка соединения с сервером';
-        errorMes.style.color = 'red';
-    }
 }
-
-// 👇 НЕ ЗАБУДЬ ПРИВЯЗАТЬ К КНОПКЕ!
-document.getElementById("SendBtn").addEventListener("click", verifySMS);
-// ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ ЧЕРЕЗ СЕРВЕР
-/*async function checkLogPasEnter() {
-    const login = document.getElementById('loginInput').value.trim();
-    const password = document.getElementById('passwordInput').value.trim();
-    const errorMessage = document.getElementById('errorMessage');
-
-    if (!login) return errorMessage.textContent = "Введите логин"
-    if (!password) return errorMessage.textContent = 'Введите пароль';
-
-    const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/auth/check-password`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ login:login, password: password })
-    });
-    
-    const data = await response.json();
-    
-    if (data.admin === 'yes') {
-        currentMode = 'admin';
-        showAllFunctions();
-        hideWindowАuthorization();
-        showAdminFunctions();
-        errorMessage.textContent = '';
-        passwordInput.value = '';
-    }
-
-    if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
-    }
-}*/
 // Вход как гость
 function enterAsGuest() {
     currentMode = 'guest';
@@ -321,7 +219,7 @@ function logout() {
 async function loadArticlesFromServer() {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-        const response = await fetch(`${API_URL}/articles/${currentSection}`);
+        const response = await fetch(`'https://sdiapacwfpaotinfgad-github-io-1.onrender.com'/articles/${currentSection}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
