@@ -2,42 +2,25 @@ const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const router = express.Router();
 const validateSection = require('../middleware/validSection');
+
 const TOKEN = '8351714545:AAERHeq51FbIWJGs-EWLjlhE_q9iyF3y4SA';
-const bot = new TelegramBot(TOKEN, {polling:true});
+const bot = new TelegramBot(TOKEN, {polling:false});
 module.exports = function(){
     router.post('/sms', validateSection, async (req, res) => {
     try {
         let { username } = req.body;
-        
-        // Валидация
         if (!username) {
             return res.status(400).json({ 
                 success: false, 
                 error: 'Username не указан' 
             });
         }
-        
-        // Очищаем username
         username = username.replace('@', '').trim();
-        
-        // Проверка длины
-        if (username.length < 5) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Слишком короткий username' 
-            });
-        }
-        
-        // Генерируем код
         const code = Math.floor(100000 + Math.random() * 900000);
-        
-        // 👇 ВАЖНО: ЖДЕМ ответ от Telegram!
         await bot.sendMessage(
             username, 
-            `🔐 Код подтверждения: ${code}\nНикому не сообщайте его!`
+            `Код подтверждения: ${code}\nНикому не сообщайте его!`
         );
-        
-        // 👇 Отправляем ответ ТОЛЬКО после успешной отправки
         res.json({ 
             success: true, 
             message: 'Код отправлен в Telegram',
@@ -46,8 +29,6 @@ module.exports = function(){
         
     } catch (error) {
         console.error('Ошибка Telegram:', error.code, error.message);
-        
-        // Понятное сообщение об ошибке
         let errorMessage = 'Не удалось отправить код';
         
         if (error.code === 'ETELEGRAM') {
@@ -66,4 +47,3 @@ module.exports = function(){
 });
 return router
 }
-
