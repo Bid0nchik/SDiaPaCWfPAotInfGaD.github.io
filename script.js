@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('adminLoginBtn').addEventListener('click', enterReg);
     document.getElementById('guestLoginBtn').addEventListener('click', enterAsGuest);
     document.getElementById("RegisterBtn").addEventListener("click", sendSMSCodeFront);
-    //document.getElementById("SendBtn").addEventListener("click", verifySMS);
     document.getElementById('passwordInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') checkPassword(); // если событие нажатия клавиши e происходит и оно enter то...
     });
@@ -84,7 +83,6 @@ async function sendSMSCodeFront() {
     const repeat_password = document.getElementById('regPasswordConfirmInput').value.trim();
     const errorMes = document.getElementById("errorMessage");
     
-    // Проверки
     if (!username) return errorMes.textContent = "Введите username";
     if (!login) return errorMes.textContent = "Введите логин";
     if (!password) return errorMes.textContent = "Введите пароль";
@@ -116,12 +114,9 @@ async function sendSMSCodeFront() {
         }
         
         if (data.success === true) {
-            localStorage.setItem('pendingUsername', username);
-            localStorage.setItem('pendingLogin', login);
-            localStorage.setItem('pendingPassword', password);
-            
             errorMes.textContent = 'Код отправлен в Telegram!';
             errorMes.style.color = 'green';
+            verifySMS();
         } else {
             errorMes.textContent = data.error || 'Не удалось отправить код';
             errorMes.style.color = 'red';
@@ -135,7 +130,8 @@ async function sendSMSCodeFront() {
 }
 
 async function verifySMS() {
-    
+    document.getElementById('Register').classList.add('hidden');
+    document.getElementById('SMS').classList.remove('hidden');
 }
 // Вход как гость
 function enterAsGuest() {
@@ -219,7 +215,7 @@ function logout() {
 async function loadArticlesFromServer() {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-        const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/articles/${currentSection}`);
+        const response = await fetch(`${API_URL}/articles/${currentSection}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
@@ -614,5 +610,4 @@ function RemoveSelections(){
     document.getElementById("hero-image").classList.add('hidden');
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
-
 }
