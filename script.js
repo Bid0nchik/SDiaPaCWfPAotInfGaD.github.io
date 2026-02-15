@@ -219,7 +219,7 @@ function logout() {
 async function loadArticlesFromServer() {
     try {
         showLoading(true); // ON/OFF значка загрузки и текста загрузки
-        const response = await fetch(`'https://sdiapacwfpaotinfgad-github-io-1.onrender.com'/articles/${currentSection}`);
+        const response = await fetch(`https://sdiapacwfpaotinfgad-github-io-1.onrender.com/articles/${currentSection}`);
         if (!response.ok) {
             throw new Error(`Ошибка HTTP: ${response.status} - ${response.statusText}`); // Создание и выброс ошибки с инфой об http статусе
         }
@@ -614,4 +614,5 @@ function RemoveSelections(){
     document.getElementById("hero-image").classList.add('hidden');
     document.getElementById("selectionMenu").classList.add('hidden');
     document.getElementById("articlesContainer").classList.remove('hidden');
+
 }
