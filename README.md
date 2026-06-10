@@ -2,7 +2,7 @@
 
 A modern, beautifully designed web platform for reading and publishing articles across various categories, featuring an interactive UI and dynamic theme switching.
 
-Live Demo: [[View the Website](https://onrender.com)](https://bid0nchik.github.io/SDiaPaCWfPAotInfGaD.github.io/)
+Live Demo: (https://bid0nchik.github.io/SDiaPaCWfPAotInfGaD.github.io/)
 
 ---
 
